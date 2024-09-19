@@ -1,11 +1,11 @@
 package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
-import com.potatocake.everymoment.dto.request.DiaryAutoRequestDTO;
-import com.potatocake.everymoment.dto.request.DiaryManualRequestDTO;
-import com.potatocake.everymoment.dto.response.MyDiariesResponseDTO;
-import com.potatocake.everymoment.dto.response.MyDiaryResponseDTO;
-import com.potatocake.everymoment.dto.response.NotificationResponseDTO;
+import com.potatocake.everymoment.dto.request.DiaryAutoRequest;
+import com.potatocake.everymoment.dto.request.DiaryManualRequest;
+import com.potatocake.everymoment.dto.response.MyDiariesResponse;
+import com.potatocake.everymoment.dto.response.MyDiaryResponse;
+import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.service.DiaryService;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,23 +32,23 @@ public class DiaryController {
 
     //자동 일기 작성
     @PostMapping("/auto")
-    public ResponseEntity<SuccessResponse<NotificationResponseDTO>> createDiaryAuto(
-            @RequestBody DiaryAutoRequestDTO diaryAutoRequestDTO) {
-        SuccessResponse<NotificationResponseDTO> response = diaryService.createDiaryAuto(diaryAutoRequestDTO);
+    public ResponseEntity<SuccessResponse<NotificationResponse>> createDiaryAuto(
+            @RequestBody DiaryAutoRequest diaryAutoRequest) {
+        SuccessResponse<NotificationResponse> response = diaryService.createDiaryAuto(diaryAutoRequest);
         return ResponseEntity.ok(response);
     }
 
     //수기 일기 작성
     @PostMapping("/manual")
     public ResponseEntity<SuccessResponse<?>> createDiaryManual(
-            @RequestBody DiaryManualRequestDTO diaryManualRequestDTO) {
-        SuccessResponse<?> response = diaryService.createDiaryManual(diaryManualRequestDTO);
+            @RequestBody DiaryManualRequest diaryManualRequest) {
+        SuccessResponse<?> response = diaryService.createDiaryManual(diaryManualRequest);
         return ResponseEntity.ok(response);
     }
 
     //내 일기 전체 조회(타임라인)
     @GetMapping("my")
-    public ResponseEntity<SuccessResponse<MyDiariesResponseDTO>> getMyDiaries(
+    public ResponseEntity<SuccessResponse<MyDiariesResponse>> getMyDiaries(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String emoji,
             @RequestParam(required = false) Long category,
@@ -59,23 +59,23 @@ public class DiaryController {
             @RequestParam(defaultValue = "0") int key,
             @RequestParam(defaultValue = "10") int size
     ) {
-        SuccessResponse<MyDiariesResponseDTO> response = diaryService.getMyDiaries(keyword, emoji, category, date, from,
+        SuccessResponse<MyDiariesResponse> response = diaryService.getMyDiaries(keyword, emoji, category, date, from,
                 until, bookmark, key, size);
         return ResponseEntity.ok(response);
     }
 
     //내 일기 상세 조회
     @GetMapping("/my/{id}")
-    public ResponseEntity<SuccessResponse<MyDiaryResponseDTO>> getMyDiary(@PathVariable Long id) {
-        SuccessResponse<MyDiaryResponseDTO> response = diaryService.getMyDiary(id);
+    public ResponseEntity<SuccessResponse<MyDiaryResponse>> getMyDiary(@PathVariable Long id) {
+        SuccessResponse<MyDiaryResponse> response = diaryService.getMyDiary(id);
         return ResponseEntity.ok(response);
     }
 
     //일기 수정
     @PatchMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> updateDiary(@PathVariable Long id,
-                                                          @RequestBody DiaryManualRequestDTO diaryManualRequestDTO) {
-        SuccessResponse<?> response = diaryService.updateDiary(id, diaryManualRequestDTO);
+                                                          @RequestBody DiaryManualRequest diaryManualRequest) {
+        SuccessResponse<?> response = diaryService.updateDiary(id, diaryManualRequest);
         return ResponseEntity.ok(response);
     }
 

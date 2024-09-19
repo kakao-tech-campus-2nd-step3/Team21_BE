@@ -1,7 +1,18 @@
 package com.potatocake.everymoment.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -14,10 +25,10 @@ public class DiaryCategory {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "diary_id", foreignKey = @ForeignKey(name = "fk_diary_id"), nullable = false)
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_diary_id"), nullable = false)
     private Diary diary;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_category_id"), nullable = false)
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_category_id"), nullable = false)
     private Category category;
 }

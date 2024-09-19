@@ -1,15 +1,15 @@
 package com.potatocake.everymoment.service;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
-import com.potatocake.everymoment.dto.request.DiaryAutoRequestDTO;
-import com.potatocake.everymoment.dto.request.DiaryManualRequestDTO;
-import com.potatocake.everymoment.dto.response.CategoryResponseDTO;
-import com.potatocake.everymoment.dto.response.FileResponseDTO;
-import com.potatocake.everymoment.dto.response.MyDiariesResponseDTO;
-import com.potatocake.everymoment.dto.response.MyDiaryResponseDTO;
-import com.potatocake.everymoment.dto.response.MyDiarySimpleResponseDTO;
-import com.potatocake.everymoment.dto.response.NotificationResponseDTO;
-import com.potatocake.everymoment.dto.response.ThumbnailResponseDTO;
+import com.potatocake.everymoment.dto.request.DiaryAutoRequest;
+import com.potatocake.everymoment.dto.request.DiaryManualRequest;
+import com.potatocake.everymoment.dto.response.CategoryResponse;
+import com.potatocake.everymoment.dto.response.FileResponse;
+import com.potatocake.everymoment.dto.response.MyDiariesResponse;
+import com.potatocake.everymoment.dto.response.MyDiaryResponse;
+import com.potatocake.everymoment.dto.response.MyDiarySimpleResponse;
+import com.potatocake.everymoment.dto.response.NotificationResponse;
+import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.DiaryCategory;
 import com.potatocake.everymoment.entity.Notification;
@@ -41,15 +41,15 @@ public class DiaryService {
     }
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
-    public SuccessResponse<NotificationResponseDTO> createDiaryAuto(DiaryAutoRequestDTO diaryAutoRequestDTO) {
+    public SuccessResponse<NotificationResponse> createDiaryAuto(DiaryAutoRequest diaryAutoRequest) {
         // member Id 가져옴
         Long memberId = 1L;
 
         Diary diary = Diary.builder()
                 .memberId(memberId)
-                .locationPoint(diaryAutoRequestDTO.getLocationPoint().toString())
-                .locationName(diaryAutoRequestDTO.getLocationName())
-                .address(diaryAutoRequestDTO.getAddress())
+                .locationPoint(diaryAutoRequest.getLocationPoint().toString())
+                .locationName(diaryAutoRequest.getLocationName())
+                .address(diaryAutoRequest.getAddress())
                 .build();
 
         Diary savedDiary = diaryRepository.save(diary);
@@ -68,34 +68,34 @@ public class DiaryService {
         Notification savedNotification = notificationRepository.save(notification);
 
         //알람 DTO
-        NotificationResponseDTO notificationResponseDTO = NotificationResponseDTO.builder()
+        NotificationResponse notificationResponse = NotificationResponse.builder()
                 .content(savedNotification.getContent())
                 .type(savedNotification.getType())
                 .targetId(savedNotification.getTargetId())
                 .createAt(savedNotification.getCreateAt())
                 .build();
 
-        return SuccessResponse.<NotificationResponseDTO>builder()
+        return SuccessResponse.<NotificationResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
-                .info(notificationResponseDTO)
+                .info(notificationResponse)
                 .build();
     }
 
     // 수동 일기 작성
-    public SuccessResponse<?> createDiaryManual(DiaryManualRequestDTO diaryManualRequestDTO) {
+    public SuccessResponse<?> createDiaryManual(DiaryManualRequest diaryManualRequest) {
         // member Id 가져옴
         Long memberId = 1L;
 
         Diary diary = Diary.builder()
                 .memberId(memberId)
-                .content(diaryManualRequestDTO.getContent())
-                .locationPoint(diaryManualRequestDTO.getLocationPoint().toString())
-                .locationName(diaryManualRequestDTO.getLocationName())
-                .address(diaryManualRequestDTO.getAddress())
-                .emoji(diaryManualRequestDTO.getEmoji())
-                .isBookmark(diaryManualRequestDTO.isBookmark())
-                .isPublic(diaryManualRequestDTO.isPublic())
+                .content(diaryManualRequest.getContent())
+                .locationPoint(diaryManualRequest.getLocationPoint().toString())
+                .locationName(diaryManualRequest.getLocationName())
+                .address(diaryManualRequest.getAddress())
+                .emoji(diaryManualRequest.getEmoji())
+                .isBookmark(diaryManualRequest.isBookmark())
+                .isPublic(diaryManualRequest.isPublic())
                 .build();
 
         Diary savedDiary = diaryRepository.save(diary);
@@ -111,9 +111,9 @@ public class DiaryService {
     }
 
     // 내 일기 전체 조회 (타임라인)
-    public SuccessResponse<MyDiariesResponseDTO> getMyDiaries(String keyword, String emoji, Long category,
-                                                              LocalDate date, LocalDate from, LocalDate until,
-                                                              Boolean isBookmark, int key, int size) {
+    public SuccessResponse<MyDiariesResponse> getMyDiaries(String keyword, String emoji, Long category,
+                                                           LocalDate date, LocalDate from, LocalDate until,
+                                                           Boolean isBookmark, int key, int size) {
         //member id 가져옴
         Long memberId = 1L;
 
@@ -141,30 +141,30 @@ public class DiaryService {
             diaryPage = diaryRepository.findAll(spec, PageRequest.of(key, size));
         }
 
-        List<MyDiarySimpleResponseDTO> diaryDTOs = diaryPage.getContent().stream()
+        List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
                 .map(this::convertToMyDiarySimpleResponseDto)
                 .collect(Collectors.toList());
 
         Integer nextPage = diaryPage.hasNext() ? key + 1 : null;
 
-        MyDiariesResponseDTO myDiariesResponseDTO = MyDiariesResponseDTO.builder()
+        MyDiariesResponse myDiariesResponse = MyDiariesResponse.builder()
                 .diaries(diaryDTOs)
                 .key(nextPage)
                 .build();
 
-        return SuccessResponse.<MyDiariesResponseDTO>builder()
+        return SuccessResponse.<MyDiariesResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
-                .info(myDiariesResponseDTO)
+                .info(myDiariesResponse)
                 .build();
     }
 
     // 내 일기 상세 조회
-    public SuccessResponse<MyDiaryResponseDTO> getMyDiary(Long id) {
+    public SuccessResponse<MyDiaryResponse> getMyDiary(Long id) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
-        return SuccessResponse.<MyDiaryResponseDTO>builder()
+        return SuccessResponse.<MyDiaryResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
                 .info(convertToMyDiaryResponseDto(diary))
@@ -172,7 +172,7 @@ public class DiaryService {
     }
 
     // 내 일기 수정
-    public SuccessResponse<?> updateDiary(Long id, DiaryManualRequestDTO diaryManualRequestDTO) {
+    public SuccessResponse<?> updateDiary(Long id, DiaryManualRequest diaryManualRequest) {
         Diary existingDiary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
@@ -183,16 +183,16 @@ public class DiaryService {
         Diary updatedDiary = Diary.builder()
                 .id(existingDiary.getId())
                 .memberId(1L)
-                .content(diaryManualRequestDTO.getContent() != null ? diaryManualRequestDTO.getContent()
+                .content(diaryManualRequest.getContent() != null ? diaryManualRequest.getContent()
                         : existingDiary.getContent())
                 .locationPoint(
-                        diaryManualRequestDTO.getLocationPoint() != null ? diaryManualRequestDTO.getLocationPoint()
+                        diaryManualRequest.getLocationPoint() != null ? diaryManualRequest.getLocationPoint()
                                 .toString() : existingDiary.getLocationPoint())
-                .locationName(diaryManualRequestDTO.getLocationName() != null ? diaryManualRequestDTO.getLocationName()
+                .locationName(diaryManualRequest.getLocationName() != null ? diaryManualRequest.getLocationName()
                         : existingDiary.getLocationName())
-                .address(diaryManualRequestDTO.getAddress() != null ? diaryManualRequestDTO.getAddress()
+                .address(diaryManualRequest.getAddress() != null ? diaryManualRequest.getAddress()
                         : existingDiary.getAddress())
-                .emoji(diaryManualRequestDTO.getEmoji() != null ? diaryManualRequestDTO.getEmoji()
+                .emoji(diaryManualRequest.getEmoji() != null ? diaryManualRequest.getEmoji()
                         : existingDiary.getEmoji())
                 .build();
 
@@ -229,8 +229,6 @@ public class DiaryService {
                 .emoji(diary.getEmoji())
                 .isBookmark(!diary.isBookmark()) // 북마크 토글
                 .isPublic(diary.isPublic())
-                .createAt(diary.getCreateAt())
-                .modifyAt(diary.getModifyAt())
                 .build();
 
         diaryRepository.save(updatedDiary);
@@ -256,8 +254,6 @@ public class DiaryService {
                 .emoji(diary.getEmoji())
                 .isBookmark(diary.isBookmark())
                 .isPublic(!diary.isPublic()) // 공개여부 토글
-                .createAt(diary.getCreateAt())
-                .modifyAt(diary.getModifyAt())
                 .build();
 
         diaryRepository.save(updatedDiary);
@@ -269,53 +265,53 @@ public class DiaryService {
     }
 
     //상세 조회시 일기DTO 변환
-    private MyDiaryResponseDTO convertToMyDiaryResponseDto(Diary savedDiary) {
+    private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary) {
         //카테고리 찾음
-        CategoryResponseDTO categoryResponseDTO = CategoryResponseDTO.builder()
+        CategoryResponse categoryResponse = CategoryResponse.builder()
                 .id(1L)
                 .categoryName("일상")
                 .build();
-        List<CategoryResponseDTO> categoryResponseDTOList = new ArrayList<>();
-        categoryResponseDTOList.add(categoryResponseDTO);
+        List<CategoryResponse> categoryResponseList = new ArrayList<>();
+        categoryResponseList.add(categoryResponse);
 
         //파일 찾음
-        FileResponseDTO fileResponseDTO = FileResponseDTO.builder()
+        FileResponse fileResponse = FileResponse.builder()
                 .id(1L)
                 .imageUrl("image1.url")
                 .order(1)
                 .build();
-        List<FileResponseDTO> fileResponseDTOList = new ArrayList<>();
-        fileResponseDTOList.add(fileResponseDTO);
+        List<FileResponse> fileResponseList = new ArrayList<>();
+        fileResponseList.add(fileResponse);
 
-        return MyDiaryResponseDTO.builder()
+        return MyDiaryResponse.builder()
                 .id(savedDiary.getId())
-                .categories(categoryResponseDTOList)
+                .categories(categoryResponseList)
                 .address(savedDiary.getAddress())
                 .locationName(savedDiary.getLocationName())
                 .isBookmark(savedDiary.isBookmark())
                 .emoji(savedDiary.getEmoji())
-                .file(fileResponseDTOList)
+                .file(fileResponseList)
                 .content(savedDiary.getContent())
                 .createAt(savedDiary.getCreateAt())
                 .build();
     }
 
     //일기 전체 불러올 때, 일기DTO 변환
-    private MyDiarySimpleResponseDTO convertToMyDiarySimpleResponseDto(Diary savedDiary) {
+    private MyDiarySimpleResponse convertToMyDiarySimpleResponseDto(Diary savedDiary) {
         //파일 찾음
-        ThumbnailResponseDTO thumbnailResponseDTO = ThumbnailResponseDTO.builder()
+        ThumbnailResponse thumbnailResponse = ThumbnailResponse.builder()
                 .id(1L)
                 .imageUrl("image1.url")
                 .build();
 
-        return MyDiarySimpleResponseDTO.builder()
+        return MyDiarySimpleResponse.builder()
                 .id(savedDiary.getId())
                 .address(savedDiary.getAddress())
                 .locationName(savedDiary.getLocationName())
                 .isBookmark(savedDiary.isBookmark())
                 .isPublic(savedDiary.isPublic())
                 .emoji(savedDiary.getEmoji())
-                .thumbnailResponseDTO(thumbnailResponseDTO)
+                .thumbnailResponse(thumbnailResponse)
                 .content(savedDiary.getContent())
                 .createAt(savedDiary.getCreateAt())
                 .build();
