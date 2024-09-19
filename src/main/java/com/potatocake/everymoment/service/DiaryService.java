@@ -1,6 +1,5 @@
 package com.potatocake.everymoment.service;
 
-import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.DiaryAutoRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,7 +39,7 @@ public class DiaryService {
     }
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
-    public SuccessResponse<NotificationResponse> createDiaryAuto(DiaryAutoRequest diaryAutoRequest) {
+    public NotificationResponse createDiaryAuto(DiaryAutoRequest diaryAutoRequest) {
         // member Id 가져옴
         Long memberId = 1L;
 
@@ -75,15 +73,11 @@ public class DiaryService {
                 .createAt(savedNotification.getCreateAt())
                 .build();
 
-        return SuccessResponse.<NotificationResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .info(notificationResponse)
-                .build();
+        return notificationResponse;
     }
 
     // 수동 일기 작성
-    public SuccessResponse<?> createDiaryManual(DiaryManualRequest diaryManualRequest) {
+    public void createDiaryManual(DiaryManualRequest diaryManualRequest) {
         // member Id 가져옴
         Long memberId = 1L;
 
@@ -103,17 +97,12 @@ public class DiaryService {
         Long diaryId = savedDiary.getId();
         //카테고리 저장
         //파일 저장
-
-        return SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .build();
     }
 
     // 내 일기 전체 조회 (타임라인)
-    public SuccessResponse<MyDiariesResponse> getMyDiaries(String keyword, String emoji, Long category,
-                                                           LocalDate date, LocalDate from, LocalDate until,
-                                                           Boolean isBookmark, int key, int size) {
+    public MyDiariesResponse getMyDiaries(String keyword, String emoji, Long category,
+                                          LocalDate date, LocalDate from, LocalDate until,
+                                          Boolean isBookmark, int key, int size) {
         //member id 가져옴
         Long memberId = 1L;
 
@@ -152,27 +141,19 @@ public class DiaryService {
                 .key(nextPage)
                 .build();
 
-        return SuccessResponse.<MyDiariesResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .info(myDiariesResponse)
-                .build();
+        return myDiariesResponse;
     }
 
     // 내 일기 상세 조회
-    public SuccessResponse<MyDiaryResponse> getMyDiary(Long id) {
+    public MyDiaryResponse getMyDiary(Long id) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
-        return SuccessResponse.<MyDiaryResponse>builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .info(convertToMyDiaryResponseDto(diary))
-                .build();
+        return convertToMyDiaryResponseDto(diary);
     }
 
     // 내 일기 수정
-    public SuccessResponse<?> updateDiary(Long id, DiaryManualRequest diaryManualRequest) {
+    public void updateDiary(Long id, DiaryManualRequest diaryManualRequest) {
         Diary existingDiary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
@@ -197,25 +178,15 @@ public class DiaryService {
                 .build();
 
         diaryRepository.save(updatedDiary);
-
-        return SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .build();
     }
 
     // 내 일기 삭제
-    public SuccessResponse<?> deleteDiary(Long id) {
+    public void deleteDiary(Long id) {
         diaryRepository.deleteById(id);
-
-        return SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .build();
     }
 
     // 내 일기 북마크 설정
-    public SuccessResponse<?> toggleBookmark(Long id) {
+    public void toggleBookmark(Long id) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
@@ -232,15 +203,10 @@ public class DiaryService {
                 .build();
 
         diaryRepository.save(updatedDiary);
-
-        return SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .build();
     }
 
     // 내 일기 공개 설정
-    public SuccessResponse<?> togglePrivacy(Long id) {
+    public void togglePrivacy(Long id) {
         Diary diary = diaryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
@@ -257,11 +223,6 @@ public class DiaryService {
                 .build();
 
         diaryRepository.save(updatedDiary);
-
-        return SuccessResponse.builder()
-                .code(HttpStatus.OK.value())
-                .message("success")
-                .build();
     }
 
     //상세 조회시 일기DTO 변환

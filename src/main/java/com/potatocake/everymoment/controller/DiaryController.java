@@ -9,6 +9,7 @@ import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.service.DiaryService;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,15 +35,27 @@ public class DiaryController {
     @PostMapping("/auto")
     public ResponseEntity<SuccessResponse<NotificationResponse>> createDiaryAuto(
             @RequestBody DiaryAutoRequest diaryAutoRequest) {
-        SuccessResponse<NotificationResponse> response = diaryService.createDiaryAuto(diaryAutoRequest);
+        NotificationResponse notificationResponse = diaryService.createDiaryAuto(diaryAutoRequest);
+        SuccessResponse<NotificationResponse> response = SuccessResponse.<NotificationResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(notificationResponse)
+                .build();
+
         return ResponseEntity.ok(response);
     }
 
     //수기 일기 작성
     @PostMapping("/manual")
-    public ResponseEntity<SuccessResponse<?>> createDiaryManual(
+    public ResponseEntity<SuccessResponse<Void>> createDiaryManual(
             @RequestBody DiaryManualRequest diaryManualRequest) {
-        SuccessResponse<?> response = diaryService.createDiaryManual(diaryManualRequest);
+        diaryService.createDiaryManual(diaryManualRequest);
+        SuccessResponse<Void> response = SuccessResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(null)
+                .build();
+
         return ResponseEntity.ok(response);
     }
 
@@ -59,44 +72,76 @@ public class DiaryController {
             @RequestParam(defaultValue = "0") int key,
             @RequestParam(defaultValue = "10") int size
     ) {
-        SuccessResponse<MyDiariesResponse> response = diaryService.getMyDiaries(keyword, emoji, category, date, from,
-                until, bookmark, key, size);
+        MyDiariesResponse myDiariesResponse = diaryService.getMyDiaries(keyword, emoji, category, date, from, until,
+                bookmark, key, size);
+        SuccessResponse<MyDiariesResponse> response = SuccessResponse.<MyDiariesResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(myDiariesResponse)
+                .build();
+
         return ResponseEntity.ok(response);
     }
 
     //내 일기 상세 조회
     @GetMapping("/my/{id}")
     public ResponseEntity<SuccessResponse<MyDiaryResponse>> getMyDiary(@PathVariable Long id) {
-        SuccessResponse<MyDiaryResponse> response = diaryService.getMyDiary(id);
+        MyDiaryResponse myDiaryResponse = diaryService.getMyDiary(id);
+        SuccessResponse<MyDiaryResponse> response = SuccessResponse.<MyDiaryResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(myDiaryResponse)
+                .build();
+
         return ResponseEntity.ok(response);
     }
 
     //일기 수정
     @PatchMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> updateDiary(@PathVariable Long id,
-                                                          @RequestBody DiaryManualRequest diaryManualRequest) {
-        SuccessResponse<?> response = diaryService.updateDiary(id, diaryManualRequest);
+    public ResponseEntity<SuccessResponse<Void>> updateDiary(@PathVariable Long id,
+                                                             @RequestBody DiaryManualRequest diaryManualRequest) {
+        diaryService.updateDiary(id, diaryManualRequest);
+        SuccessResponse<Void> response = SuccessResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(null)
+                .build();
         return ResponseEntity.ok(response);
     }
 
     //일기 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> deleteDiary(@PathVariable Long id) {
-        SuccessResponse<?> response = diaryService.deleteDiary(id);
+    public ResponseEntity<SuccessResponse<Void>> deleteDiary(@PathVariable Long id) {
+        diaryService.deleteDiary(id);
+        SuccessResponse<Void> response = SuccessResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(null)
+                .build();
         return ResponseEntity.ok(response);
     }
 
     //북마크 설정 토글
     @PatchMapping("/{id}/bookmark")
-    public ResponseEntity<SuccessResponse<?>> toggleBookmark(@PathVariable Long id) {
-        SuccessResponse<?> response = diaryService.toggleBookmark(id);
+    public ResponseEntity<SuccessResponse<Void>> toggleBookmark(@PathVariable Long id) {
+        diaryService.toggleBookmark(id);
+        SuccessResponse<Void> response = SuccessResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(null)
+                .build();
         return ResponseEntity.ok(response);
     }
 
     //공개 설정 토글
     @PatchMapping("/{id}/privacy")
-    public ResponseEntity<SuccessResponse<?>> togglePrivacy(@PathVariable Long id) {
-        SuccessResponse<?> response = diaryService.togglePrivacy(id);
+    public ResponseEntity<SuccessResponse<Void>> togglePrivacy(@PathVariable Long id) {
+        diaryService.togglePrivacy(id);
+        SuccessResponse<Void> response = SuccessResponse.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(null)
+                .build();
         return ResponseEntity.ok(response);
     }
 }
