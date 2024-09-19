@@ -1,4 +1,4 @@
-package com.potatocake.everymoment.entity;
+package com.potatocake.everymoment.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

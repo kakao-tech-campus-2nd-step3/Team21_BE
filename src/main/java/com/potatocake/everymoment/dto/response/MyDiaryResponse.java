@@ -1,25 +1,20 @@
 package com.potatocake.everymoment.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class MyDiaryResponseDTO {
+public class MyDiaryResponse {
     private Long id;
-    private List<CategoryResponseDTO> categories;
+    private List<CategoryResponse> categories;
     private String address;
     private String locationName;
     private boolean isBookmark;
     private String emoji;
-    private List<FileResponseDTO> file;
+    private List<FileResponse> file;
     private String content;
     private LocalDateTime createAt;
 }

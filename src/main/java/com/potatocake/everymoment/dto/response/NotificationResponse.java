@@ -1,17 +1,12 @@
 package com.potatocake.everymoment.dto.response;
 
-import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class NotificationResponseDTO {
+public class NotificationResponse {
     private String content;
     private String type;
     private Long targetId;
