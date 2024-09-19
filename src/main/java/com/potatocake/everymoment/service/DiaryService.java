@@ -171,6 +171,49 @@ public class DiaryService {
                 .build();
     }
 
+    // 내 일기 수정
+    public SuccessResponse<?> updateDiary(Long id, DiaryManualRequestDTO diaryManualRequestDTO) {
+        Diary existingDiary = diaryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+
+        //카테고리 업데이트
+        //파일 업데이트
+
+        //다이어리 업데이트
+        Diary updatedDiary = Diary.builder()
+                .id(existingDiary.getId())
+                .memberId(1L)
+                .content(diaryManualRequestDTO.getContent() != null ? diaryManualRequestDTO.getContent()
+                        : existingDiary.getContent())
+                .locationPoint(
+                        diaryManualRequestDTO.getLocationPoint() != null ? diaryManualRequestDTO.getLocationPoint()
+                                .toString() : existingDiary.getLocationPoint())
+                .locationName(diaryManualRequestDTO.getLocationName() != null ? diaryManualRequestDTO.getLocationName()
+                        : existingDiary.getLocationName())
+                .address(diaryManualRequestDTO.getAddress() != null ? diaryManualRequestDTO.getAddress()
+                        : existingDiary.getAddress())
+                .emoji(diaryManualRequestDTO.getEmoji() != null ? diaryManualRequestDTO.getEmoji()
+                        : existingDiary.getEmoji())
+                .build();
+
+        diaryRepository.save(updatedDiary);
+
+        return SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .build();
+    }
+
+    // 내 일기 삭제
+    public SuccessResponse<?> deleteDiary(Long id) {
+        diaryRepository.deleteById(id);
+
+        return SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .build();
+    }
+
     //상세 조회시 일기DTO 변환
     private MyDiaryResponseDTO convertToMyDiaryResponseDto(Diary savedDiary) {
         //카테고리 찾음
