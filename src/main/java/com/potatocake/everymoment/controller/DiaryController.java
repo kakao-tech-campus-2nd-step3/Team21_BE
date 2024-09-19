@@ -3,12 +3,19 @@ package com.potatocake.everymoment.controller;
 import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.DiaryAutoRequestDTO;
 import com.potatocake.everymoment.dto.request.DiaryManualRequestDTO;
+import com.potatocake.everymoment.dto.response.MyDiariesResponseDTO;
+import com.potatocake.everymoment.dto.response.MyDiaryResponseDTO;
 import com.potatocake.everymoment.dto.response.NotificationResponseDTO;
 import com.potatocake.everymoment.service.DiaryService;
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,6 +41,31 @@ public class DiaryController {
     public ResponseEntity<SuccessResponse<?>> createDiaryManual(
             @RequestBody DiaryManualRequestDTO diaryManualRequestDTO) {
         SuccessResponse<?> response = diaryService.createDiaryManual(diaryManualRequestDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    //내 일기 전체 조회(타임라인)
+    @GetMapping("my")
+    public ResponseEntity<SuccessResponse<MyDiariesResponseDTO>> getMyDiaries(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String emoji,
+            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate until,
+            @RequestParam(required = false) Boolean bookmark,
+            @RequestParam(defaultValue = "0") int key,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        SuccessResponse<MyDiariesResponseDTO> response = diaryService.getMyDiaries(keyword, emoji, category, date, from,
+                until, bookmark, key, size);
+        return ResponseEntity.ok(response);
+    }
+
+    //내 일기 상세 조회
+    @GetMapping("/my/{id}")
+    public ResponseEntity<SuccessResponse<MyDiaryResponseDTO>> getMyDiary(@PathVariable Long id) {
+        SuccessResponse<MyDiaryResponseDTO> response = diaryService.getMyDiary(id);
         return ResponseEntity.ok(response);
     }
 }
