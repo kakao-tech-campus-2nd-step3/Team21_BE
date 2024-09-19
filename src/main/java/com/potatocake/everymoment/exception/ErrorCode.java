@@ -1,6 +1,10 @@
 package com.potatocake.everymoment.exception;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -21,7 +25,9 @@ public enum ErrorCode {
     /* Comment */
     COMMENT_NOT_FOUND("존재하지 않는 댓글입니다.", NOT_FOUND),
 
-    UNKNOWN_ERROR("알 수 없는 오류가 발생했습니다.", INTERNAL_SERVER_ERROR);
+    UNKNOWN_ERROR("알 수 없는 오류가 발생했습니다.", INTERNAL_SERVER_ERROR),
+
+    LOGIN_FAILED("로그인에 실패했습니다.", UNAUTHORIZED);
 
     private final String message;
     private final HttpStatus status;
