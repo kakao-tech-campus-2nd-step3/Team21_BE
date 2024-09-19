@@ -68,7 +68,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(SC_OK);
 
-        JwtResponse jwt = JwtResponse.of(jwtUtil.PREFIX + token);
+        JwtResponse jwt = JwtResponse.of(token);
 
         objectMapper.writeValue(response.getWriter(), SuccessResponse.of(jwt));
     }

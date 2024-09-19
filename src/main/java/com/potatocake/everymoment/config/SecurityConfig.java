@@ -3,6 +3,7 @@ package com.potatocake.everymoment.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.security.MemberAuthenticationService;
+import com.potatocake.everymoment.security.filter.JwtFilter;
 import com.potatocake.everymoment.security.filter.LoginFilter;
 import com.potatocake.everymoment.security.handler.Http401Handler;
 import com.potatocake.everymoment.util.JwtUtil;
@@ -40,17 +41,17 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/members/login", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/members/login", "/h2-console/**", "/error").permitAll()
                         .anyRequest().authenticated());
-
-        http
-                .addFilterAt(new LoginFilter(filterProcessesUrl, objectMapper, jwtUtil, memberRepository,
-                                authenticationManager()),
-                        UsernamePasswordAuthenticationFilter.class);
 
         http
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new Http401Handler(objectMapper)));
+
+        http
+                .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class)
+                .addFilterAt(new LoginFilter(filterProcessesUrl, objectMapper, jwtUtil, memberRepository,
+                        authenticationManager()), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .sessionManagement(session -> session
@@ -71,7 +72,7 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return new MemberAuthenticationService(memberRepository, passwordEncoder());
+        return new MemberAuthenticationService(memberRepository);
     }
 
     @Bean
