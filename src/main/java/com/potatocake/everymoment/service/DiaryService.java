@@ -214,6 +214,60 @@ public class DiaryService {
                 .build();
     }
 
+    // 내 일기 북마크 설정
+    public SuccessResponse<?> toggleBookmark(Long id) {
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+
+        Diary updatedDiary = Diary.builder()
+                .id(diary.getId())
+                .memberId(diary.getMemberId())
+                .content(diary.getContent())
+                .locationPoint(diary.getLocationPoint())
+                .locationName(diary.getLocationName())
+                .address(diary.getAddress())
+                .emoji(diary.getEmoji())
+                .isBookmark(!diary.isBookmark()) // 북마크 토글
+                .isPublic(diary.isPublic())
+                .createAt(diary.getCreateAt())
+                .modifyAt(diary.getModifyAt())
+                .build();
+
+        diaryRepository.save(updatedDiary);
+
+        return SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .build();
+    }
+
+    // 내 일기 공개 설정
+    public SuccessResponse<?> togglePrivacy(Long id) {
+        Diary diary = diaryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
+
+        Diary updatedDiary = Diary.builder()
+                .id(diary.getId())
+                .memberId(diary.getMemberId())
+                .content(diary.getContent())
+                .locationPoint(diary.getLocationPoint())
+                .locationName(diary.getLocationName())
+                .address(diary.getAddress())
+                .emoji(diary.getEmoji())
+                .isBookmark(diary.isBookmark())
+                .isPublic(!diary.isPublic()) // 공개여부 토글
+                .createAt(diary.getCreateAt())
+                .modifyAt(diary.getModifyAt())
+                .build();
+
+        diaryRepository.save(updatedDiary);
+
+        return SuccessResponse.builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .build();
+    }
+
     //상세 조회시 일기DTO 변환
     private MyDiaryResponseDTO convertToMyDiaryResponseDto(Diary savedDiary) {
         //카테고리 찾음

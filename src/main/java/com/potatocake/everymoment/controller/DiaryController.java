@@ -85,4 +85,18 @@ public class DiaryController {
         SuccessResponse<?> response = diaryService.deleteDiary(id);
         return ResponseEntity.ok(response);
     }
+
+    //북마크 설정 토글
+    @PatchMapping("/{id}/bookmark")
+    public ResponseEntity<SuccessResponse<?>> toggleBookmark(@PathVariable Long id) {
+        SuccessResponse<?> response = diaryService.toggleBookmark(id);
+        return ResponseEntity.ok(response);
+    }
+
+    //공개 설정 토글
+    @PatchMapping("/{id}/privacy")
+    public ResponseEntity<SuccessResponse<?>> togglePrivacy(@PathVariable Long id) {
+        SuccessResponse<?> response = diaryService.togglePrivacy(id);
+        return ResponseEntity.ok(response);
+    }
 }
