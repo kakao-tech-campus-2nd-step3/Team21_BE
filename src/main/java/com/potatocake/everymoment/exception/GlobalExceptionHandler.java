@@ -38,19 +38,6 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e) {
-        log.error("알 수 없는 에러", e);
-
-        ErrorCode unknownError = ErrorCode.UNKNOWN_ERROR;
-        HttpStatus status = unknownError.getStatus();
-
-        ErrorResponse errorResponse = getErrorResponse(status.value(), e.getMessage());
-
-        return ResponseEntity.status(status)
-                .body(errorResponse);
-    }
-
     private ErrorResponse getErrorResponse(int code, String message) {
         return ErrorResponse.builder()
                 .code(code)
