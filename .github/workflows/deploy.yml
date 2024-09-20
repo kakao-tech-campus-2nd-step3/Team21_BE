@@ -1,0 +1,48 @@
+name: master 브랜치 자동 배포
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 프로젝트 코드를 CI 서버로 옮겨오기
+        uses: actions/checkout@v4
+
+      - name: JDK 21 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: 빌드로 테스트 수행 및 Jar 파일 생성
+        run: |
+          ./gradlew clean build
+          mv build/libs/*SNAPSHOT.jar ./app.jar
+
+      - name: 생성된 Jar 파일 EC2 서버로 전송하기
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script_stop: true
+          overwrite: true
+          source: app.jar
+          target: /home/ubuntu/project
+
+      - name: EC2 서버에 접속하기(SSH) 및 스프링 서버 실행
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script_stop: true
+          script: |
+            cd ./project
+            sudo fuser -k -n tcp 8080 || true
+            nohup java -jar app.jar > ./output.log 2>&1 &
