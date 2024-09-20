@@ -10,6 +10,7 @@ import lombok.Getter;
 @JsonInclude(Include.NON_NULL)
 public class SuccessResponse<T> {
 
+    private int code;
     private String message;
     private T info;
 
