@@ -21,6 +21,7 @@ jobs:
 
       - name: 빌드로 테스트 수행 및 Jar 파일 생성
         run: |
+          chmod +x ./gradlew
           ./gradlew clean build
           mv build/libs/*SNAPSHOT.jar ./app.jar
 
