@@ -5,6 +5,9 @@ import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.FileResponse;
+import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
+import com.potatocake.everymoment.dto.response.FriendDiarySimpleResponse;
+import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiarySimpleResponse;
@@ -12,19 +15,28 @@ import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.DiaryCategory;
+import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.entity.Notification;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
+import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
+import com.potatocake.everymoment.security.MemberDetails;
+import com.potatocake.everymoment.util.JwtUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,11 +51,13 @@ public class DiaryService {
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
     public NotificationResponse createDiaryAuto(DiaryAutoCreateRequest diaryAutoCreateRequest) {
-        // member Id 가져옴
-        Long memberId = 1L;
+        // member 가져옴
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
+        Member currentMember = memberDetails.getMember();
 
         Diary diary = Diary.builder()
-                .memberId(memberId)
+                .memberId(currentMember)
                 .locationPoint(diaryAutoCreateRequest.getLocationPoint().toString())
                 .locationName(diaryAutoCreateRequest.getLocationName())
                 .address(diaryAutoCreateRequest.getAddress())
@@ -55,7 +69,7 @@ public class DiaryService {
         String content = "현재 " + savedDiary.getLocationName() + "에 머무르고 있어요! 지금 기분은 어떠신가요?";
 
         Notification notification = Notification.builder()
-                .memberId(memberId)
+                .memberId(currentMember)
                 .content(content)
                 .type("MOOD_CHECK")
                 .targetId(savedDiary.getId())
@@ -77,11 +91,13 @@ public class DiaryService {
 
     // 수동 일기 작성
     public void createDiaryManual(DiaryManualCreateRequest diaryManualCreateRequest) {
-        // member Id 가져옴
-        Long memberId = 1L;
+        // member Id
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
+        Member currentMember = memberDetails.getMember();
 
         Diary diary = Diary.builder()
-                .memberId(memberId)
+                .memberId(currentMember)
                 .content(diaryManualCreateRequest.getContent())
                 .locationPoint(diaryManualCreateRequest.getLocationPoint().toString())
                 .locationName(diaryManualCreateRequest.getLocationName())
@@ -101,8 +117,10 @@ public class DiaryService {
     // 내 일기 전체 조회 (타임라인)
     @Transactional(readOnly = true)
     public MyDiariesResponse getMyDiaries(DiaryFilterRequest diaryFilterRequest) {
-        //member id 가져옴
-        Long memberId = 1L;
+        //member 가져옴
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
+        Member currentMember = memberDetails.getMember();
 
         Page<Diary> diaryPage;
 
@@ -111,7 +129,7 @@ public class DiaryService {
             Specification<Diary> spec = DiarySpecification.filterDiaries(diaryFilterRequest.getKeyword(),
                             diaryFilterRequest.getEmoji(), diaryFilterRequest.getDate(), diaryFilterRequest.getFrom(),
                             diaryFilterRequest.getUntil(), diaryFilterRequest.getBookmark())
-                    .and((root, query, builder) -> builder.equal(root.get("memberId"), memberId));
+                    .and((root, query, builder) -> builder.equal(root.get("memberId"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,
                     PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
@@ -123,7 +141,7 @@ public class DiaryService {
             // Diary 중에 memberId같은 것 가져옴
             List<Long> DiaryIdList = diaryCategoryList.stream()
                     .filter(diaryCategory -> diaryCategory.getDiary().getMemberId()
-                            .equals(memberId)) // memberId가 일치하는 경우 필터링
+                            .equals(currentMember)) // memberId가 일치하는 경우 필터링
                     .map(diaryCategory -> diaryCategory.getDiary().getId())
                     .collect(Collectors.toList());
 
@@ -148,16 +166,13 @@ public class DiaryService {
     // 내 일기 상세 조회
     @Transactional(readOnly = true)
     public MyDiaryResponse getMyDiary(Long id) {
-        Diary diary = diaryRepository.findById(id)
-                .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
-
+        Diary diary = getExistDiary(id);
         return convertToMyDiaryResponseDto(diary);
     }
 
     // 내 일기 수정
     public void updateDiary(Long id, DiaryManualCreateRequest diaryManualCreateRequest) {
-        Diary existingDiary = diaryRepository.findById(id)
-                .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
+        Diary existingDiary = getExistDiary(id);
 
         //카테고리 업데이트
         //파일 업데이트
@@ -175,23 +190,36 @@ public class DiaryService {
 
     // 내 일기 삭제
     public void deleteDiary(Long id) {
-        diaryRepository.deleteById(id);
+        Diary existingDiary = getExistDiary(id);
+        diaryRepository.delete(existingDiary);
     }
 
     // 내 일기 북마크 설정
     public void toggleBookmark(Long id) {
-        Diary existingDiary = diaryRepository.findById(id)
-                .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
-
+        Diary existingDiary = getExistDiary(id);
         existingDiary.toggleBookmark();
     }
 
     // 내 일기 공개 설정
     public void togglePrivacy(Long id) {
-        Diary existingDiary = diaryRepository.findById(id)
+        Diary existingDiary = getExistDiary(id);
+        existingDiary.togglePublic();
+    }
+
+    // 로그인한 유저의 일기가 맞는지 확인 후 일기 반환
+    private Diary getExistDiary(Long diaryId){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
+        Member currentMember = memberDetails.getMember();
+
+        Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
-        existingDiary.togglePublic();
+        if(!Objects.equals(currentMember.getId(), diary.getMemberId().getId())){
+            throw new GlobalException(ErrorCode.DIARY_NOT_FOUND);
+        }
+
+        return diary;
     }
 
     //상세 조회시 일기DTO 변환
