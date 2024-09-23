@@ -1,13 +1,15 @@
 package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
-import com.potatocake.everymoment.dto.request.DiaryAutoRequest;
-import com.potatocake.everymoment.dto.request.DiaryManualRequest;
+import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
+import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
+import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.service.DiaryService;
 import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,21 +23,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("api/diaries")
+@RequestMapping("/api/diaries")
 public class DiaryController {
 
     private final DiaryService diaryService;
 
-    public DiaryController(DiaryService diaryService) {
-        this.diaryService = diaryService;
-    }
-
     //자동 일기 작성
     @PostMapping("/auto")
     public ResponseEntity<SuccessResponse<NotificationResponse>> createDiaryAuto(
-            @RequestBody DiaryAutoRequest diaryAutoRequest) {
-        NotificationResponse notificationResponse = diaryService.createDiaryAuto(diaryAutoRequest);
+            @RequestBody DiaryAutoCreateRequest diaryAutoCreateRequest) {
+        NotificationResponse notificationResponse = diaryService.createDiaryAuto(diaryAutoCreateRequest);
         SuccessResponse<NotificationResponse> response = SuccessResponse.<NotificationResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
@@ -48,8 +47,8 @@ public class DiaryController {
     //수기 일기 작성
     @PostMapping("/manual")
     public ResponseEntity<SuccessResponse<Void>> createDiaryManual(
-            @RequestBody DiaryManualRequest diaryManualRequest) {
-        diaryService.createDiaryManual(diaryManualRequest);
+            @RequestBody DiaryManualCreateRequest diaryManualCreateRequest) {
+        diaryService.createDiaryManual(diaryManualCreateRequest);
         SuccessResponse<Void> response = SuccessResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
@@ -60,7 +59,7 @@ public class DiaryController {
     }
 
     //내 일기 전체 조회(타임라인)
-    @GetMapping("my")
+    @GetMapping("/my")
     public ResponseEntity<SuccessResponse<MyDiariesResponse>> getMyDiaries(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String emoji,
@@ -72,8 +71,19 @@ public class DiaryController {
             @RequestParam(defaultValue = "0") int key,
             @RequestParam(defaultValue = "10") int size
     ) {
-        MyDiariesResponse myDiariesResponse = diaryService.getMyDiaries(keyword, emoji, category, date, from, until,
-                bookmark, key, size);
+        DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
+                .keyword(keyword)
+                .emoji(emoji)
+                .category(category)
+                .date(date)
+                .from(from)
+                .until(until)
+                .bookmark(bookmark)
+                .key(key)
+                .size(size)
+                .build();
+
+        MyDiariesResponse myDiariesResponse = diaryService.getMyDiaries(diaryFilterRequest);
         SuccessResponse<MyDiariesResponse> response = SuccessResponse.<MyDiariesResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")
@@ -99,8 +109,8 @@ public class DiaryController {
     //일기 수정
     @PatchMapping("/{id}")
     public ResponseEntity<SuccessResponse<Void>> updateDiary(@PathVariable Long id,
-                                                             @RequestBody DiaryManualRequest diaryManualRequest) {
-        diaryService.updateDiary(id, diaryManualRequest);
+                                                             @RequestBody DiaryManualCreateRequest diaryManualCreateRequest) {
+        diaryService.updateDiary(id, diaryManualCreateRequest);
         SuccessResponse<Void> response = SuccessResponse.<Void>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")

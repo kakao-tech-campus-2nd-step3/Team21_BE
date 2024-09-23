@@ -50,4 +50,50 @@ public class Diary extends BaseTimeEntity {
     @Column(nullable = false)
     @Builder.Default
     private boolean isPublic = false;
+
+    public void updateContent(String content) {
+        if (content != null) {
+            this.content = content;
+        }
+    }
+
+    public void updateLocationPoint(String locationPoint) {
+        if (locationPoint != null) {
+            this.locationPoint = locationPoint;
+        }
+    }
+
+    public void updateLocationName(String locationName) {
+        if (locationName != null) {
+            this.locationName = locationName;
+        }
+    }
+
+    public void updateAddress(String address) {
+        if (address != null) {
+            this.address = address;
+        }
+    }
+
+    public void updateEmoji(String emoji) {
+        if (emoji != null) {
+            this.emoji = emoji;
+        }
+    }
+
+    public void updateBookmark(boolean isBookmark) {
+        this.isBookmark = isBookmark;
+    }
+
+    public void updatePublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public void toggleBookmark() {
+        this.isBookmark = !this.isBookmark;
+    }
+
+    public void togglePublic() {
+        this.isPublic = !this.isPublic;
+    }
 }
