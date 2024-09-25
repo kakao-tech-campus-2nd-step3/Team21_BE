@@ -1,8 +1,11 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
 import com.potatocake.everymoment.entity.Member;
+import com.potatocake.everymoment.exception.ErrorCode;
+import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import java.util.List;
@@ -53,6 +56,18 @@ public class MemberService {
                         .nickname(member.getNickname())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public MemberDetailResponse getMyInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return MemberDetailResponse.builder()
+                .id(member.getId())
+                .profileImageUrl(member.getProfileImageUrl())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .build();
     }
 
 }

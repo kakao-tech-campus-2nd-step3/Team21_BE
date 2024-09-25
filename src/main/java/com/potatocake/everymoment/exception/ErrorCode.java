@@ -28,7 +28,9 @@ public enum ErrorCode {
     UNKNOWN_ERROR("알 수 없는 오류가 발생했습니다.", INTERNAL_SERVER_ERROR),
 
     LOGIN_FAILED("로그인에 실패했습니다.", UNAUTHORIZED),
-    LOGIN_REQUIRED("유효한 인증 정보가 필요합니다.", UNAUTHORIZED);
+    LOGIN_REQUIRED("유효한 인증 정보가 필요합니다.", UNAUTHORIZED),
+
+    MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", NOT_FOUND);
 
     private final String message;
     private final HttpStatus status;
