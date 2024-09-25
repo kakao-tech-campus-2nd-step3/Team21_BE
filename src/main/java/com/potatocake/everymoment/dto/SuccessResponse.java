@@ -14,8 +14,17 @@ public class SuccessResponse<T> {
     private String message;
     private T info;
 
-    public static <T> SuccessResponse of(T info) {
+    public static <T> SuccessResponse of(int code, T info) {
         return SuccessResponse.builder()
+                .code(code)
+                .message("success")
+                .info(info)
+                .build();
+    }
+
+    public static <T> SuccessResponse ok(T info) {
+        return SuccessResponse.builder()
+                .code(200)
                 .message("success")
                 .info(info)
                 .build();
