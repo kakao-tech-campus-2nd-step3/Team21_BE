@@ -46,12 +46,11 @@ public class SecurityConfig {
 
         http
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(new Http401Handler(objectMapper)));
+                        .authenticationEntryPoint(http401Handler()));
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class)
-                .addFilterAt(new LoginFilter(filterProcessesUrl, objectMapper, jwtUtil, memberRepository,
-                        authenticationManager()), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter(), LoginFilter.class)
+                .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .sessionManagement(session -> session
@@ -68,6 +67,21 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
 
         return new ProviderManager(provider);
+    }
+
+    @Bean
+    public JwtFilter jwtFilter() {
+        return new JwtFilter(jwtUtil);
+    }
+
+    @Bean
+    public LoginFilter loginFilter() {
+        return new LoginFilter(filterProcessesUrl, objectMapper, jwtUtil, memberRepository, authenticationManager());
+    }
+
+    @Bean
+    public Http401Handler http401Handler() {
+        return new Http401Handler(objectMapper);
     }
 
     @Bean
