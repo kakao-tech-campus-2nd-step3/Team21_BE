@@ -2,6 +2,7 @@ package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
+import com.potatocake.everymoment.dto.response.MemberResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
 import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.MemberService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,6 +39,14 @@ public class MemberController {
     public ResponseEntity<SuccessResponse<MemberDetailResponse>> myInfo(
             @AuthenticationPrincipal MemberDetails memberDetails) {
         MemberDetailResponse response = memberService.getMyInfo(memberDetails.getId());
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok(response));
+    }
+
+    @GetMapping("/{memberId}")
+    public ResponseEntity<SuccessResponse<MemberResponse>> memberInfo(@PathVariable Long memberId) {
+        MemberResponse response = memberService.getMemberInfo(memberId);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));

@@ -37,6 +37,31 @@ public class MemberService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public MemberDetailResponse getMyInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return MemberDetailResponse.builder()
+                .id(member.getId())
+                .profileImageUrl(member.getProfileImageUrl())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MemberResponse getMemberInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
+        return MemberResponse.builder()
+                .id(member.getId())
+                .profileImageUrl(member.getProfileImageUrl())
+                .nickname(member.getNickname())
+                .build();
+    }
+
     private Window<Member> fetchMemberWindow(String nickname, String email, Long key, int size) {
         ScrollPosition scrollPosition = pagingUtil.createScrollPosition(key);
         Pageable pageable = pagingUtil.createPageable(size);
@@ -56,18 +81,6 @@ public class MemberService {
                         .nickname(member.getNickname())
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    public MemberDetailResponse getMyInfo(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-
-        return MemberDetailResponse.builder()
-                .id(member.getId())
-                .profileImageUrl(member.getProfileImageUrl())
-                .nickname(member.getNickname())
-                .email(member.getEmail())
-                .build();
     }
 
 }
