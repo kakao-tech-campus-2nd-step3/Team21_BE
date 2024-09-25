@@ -30,4 +30,11 @@ public class SuccessResponse<T> {
                 .build();
     }
 
+    public static <T> SuccessResponse ok() {
+        return SuccessResponse.builder()
+                .code(200)
+                .message("success")
+                .build();
+    }
+
 }

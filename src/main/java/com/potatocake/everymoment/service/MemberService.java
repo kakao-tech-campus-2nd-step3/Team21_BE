@@ -8,6 +8,7 @@ import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
+import com.potatocake.everymoment.util.S3FileUploader;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Transactional
@@ -24,6 +26,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PagingUtil pagingUtil;
+    private final S3FileUploader s3FileUploader;
 
     @Transactional(readOnly = true)
     public MemberSearchResponse searchMembers(String nickname, String email, Long key, int size) {
@@ -60,6 +63,15 @@ public class MemberService {
                 .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname())
                 .build();
+    }
+
+    public void updateMemberInfo(Long id, MultipartFile profileImage, String nickname) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
+        String profileImageUrl = s3FileUploader.uploadFile(profileImage);
+
+        member.update(nickname, profileImageUrl);
     }
 
     private Window<Member> fetchMemberWindow(String nickname, String email, Long key, int size) {

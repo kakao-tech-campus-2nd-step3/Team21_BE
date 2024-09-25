@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public enum ErrorCode {
 
     /* File */
     FILE_NOT_FOUND("존재하지 않는 파일입니다.", NOT_FOUND),
-    FILE_SIZE_EXCEEDED("전체 파일 크기를 10MB 이하로 첨부해 주세요.", PAYLOAD_TOO_LARGE),
+    FILE_SIZE_EXCEEDED("각 파일은 1MB 이하로, 전체 파일 크기는 10MB 이하로 첨부해 주세요.", PAYLOAD_TOO_LARGE),
 
     /* Comment */
     COMMENT_NOT_FOUND("존재하지 않는 댓글입니다.", NOT_FOUND),
@@ -30,7 +31,13 @@ public enum ErrorCode {
     LOGIN_FAILED("로그인에 실패했습니다.", UNAUTHORIZED),
     LOGIN_REQUIRED("유효한 인증 정보가 필요합니다.", UNAUTHORIZED),
 
-    MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", NOT_FOUND);
+    MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", NOT_FOUND),
+
+    /* S3FileUploader */
+    INVALID_FILE_TYPE("이미지 파일 형식만 첨부가 가능합니다. (JPEG, PNG)", UNSUPPORTED_MEDIA_TYPE),
+    FILE_STORE_FAILED("파일 저장에 실패했습니다.", INTERNAL_SERVER_ERROR),
+
+    INFO_REQUIRED("정보를 입력해 주세요.", CONFLICT);
 
     private final String message;
     private final HttpStatus status;
