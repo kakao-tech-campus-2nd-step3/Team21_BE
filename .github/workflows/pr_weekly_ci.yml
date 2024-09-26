@@ -8,6 +8,11 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      pull-requests: write
+
     steps:
       - name: 프로젝트 코드를 CI 서버로 옮겨오기
         uses: actions/checkout@v4
@@ -32,7 +37,7 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean build
 
-      - name: Show test result
+      - name: 테스트 수행 결과 보고
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
