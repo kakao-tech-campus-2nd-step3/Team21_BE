@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -37,7 +38,7 @@ public enum ErrorCode {
     INVALID_FILE_TYPE("이미지 파일 형식만 첨부가 가능합니다. (JPEG, PNG)", UNSUPPORTED_MEDIA_TYPE),
     FILE_STORE_FAILED("파일 저장에 실패했습니다.", INTERNAL_SERVER_ERROR),
 
-    INFO_REQUIRED("정보를 입력해 주세요.", CONFLICT);
+    INFO_REQUIRED("정보를 입력해 주세요.", BAD_REQUEST);
 
     private final String message;
     private final HttpStatus status;
