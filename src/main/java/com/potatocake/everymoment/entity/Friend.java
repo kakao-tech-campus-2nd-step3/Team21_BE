@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Builder
-public class Notification extends BaseTimeEntity {
+public class Friend {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,16 +29,15 @@ public class Notification extends BaseTimeEntity {
     @JoinColumn(nullable = false)
     private Member memberId;
 
-    @Column(nullable = false)
-    private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    private Member friendId;
 
     @Column(nullable = false)
     @Builder.Default
-    private boolean isRead = false;
+    private boolean isClose = false;
 
-    @Column(length = 50, nullable = false)
-    private String type;
-
-    @Column(nullable = false)
-    private Long targetId;
+    public void toggleIsClose() {
+        this.isClose = !this.isClose;
+    }
 }

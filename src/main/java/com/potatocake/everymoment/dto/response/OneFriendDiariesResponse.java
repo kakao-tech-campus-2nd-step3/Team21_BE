@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class MyDiariesResponse {
-    private List<MyDiarySimpleResponse> diaries;
+public class OneFriendDiariesResponse {
+    private List<FriendDiarySimpleResponse> diaries;
     private Integer next;
 }

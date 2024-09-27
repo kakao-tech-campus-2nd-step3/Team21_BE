@@ -22,9 +22,11 @@ public class DiarySpecification {
             if (emoji != null) {
                 predicate = builder.and(predicate, builder.equal(root.get("emoji"), emoji));
             }
-            if (date != null) {
-                predicate = builder.and(predicate, builder.equal(builder.function("DATE", LocalDate.class, root.get("createAt")), date));
-            }
+
+            // 날짜 필터링 (null일 경우 오늘 날짜로 기본값 설정)
+            LocalDate filterDate = (date != null) ? date : LocalDate.now();
+            predicate = builder.and(predicate, builder.equal(root.get("createAt").as(LocalDate.class), filterDate));
+
             if (from != null && until != null) {
                 predicate = builder.and(predicate, builder.between(root.get("createAt"), from.atStartOfDay(), until.plusDays(1).atStartOfDay()));
             }

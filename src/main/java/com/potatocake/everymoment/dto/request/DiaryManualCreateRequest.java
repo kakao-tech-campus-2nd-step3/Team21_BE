@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
-public class DiaryManualRequest {
+public class DiaryManualCreateRequest {
     private List<CategoryRequest> categories;
     private LocationPoint locationPoint;
     private String locationName;
