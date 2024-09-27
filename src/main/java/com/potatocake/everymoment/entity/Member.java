@@ -32,4 +32,9 @@ public class Member extends BaseTimeEntity {
     @Lob
     private String profileImageUrl;
 
+    public void update(String nickname, String profileImageUrl) {
+        this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
+    }
+
 }

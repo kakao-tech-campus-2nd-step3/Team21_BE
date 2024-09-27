@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 10MB
+      resolve-lazily: true
+
+aws:
+  s3:
+    client: AmazonS3
+    region: ap-northeast-2
+    bucket: ${AWS_S3_BUCKET}
+    accessKey: ${AWS_S3_ACCESS_KEY}
+    secretKey: ${AWS_S3_SECRET_KEY}

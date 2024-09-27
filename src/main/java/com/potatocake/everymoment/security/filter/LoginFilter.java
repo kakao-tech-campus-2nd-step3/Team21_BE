@@ -70,7 +70,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         JwtResponse jwt = JwtResponse.of(token);
 
-        objectMapper.writeValue(response.getWriter(), SuccessResponse.of(jwt));
+        objectMapper.writeValue(response.getWriter(), SuccessResponse.ok(jwt));
     }
 
     @Override
