@@ -15,6 +15,12 @@ public enum ErrorCode {
     /* Diary */
     DIARY_NOT_FOUND("존재하지 않는 일기입니다.", NOT_FOUND),
 
+    /* Member */
+    MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", NOT_FOUND),
+
+    /* Friend */
+    FRIEND_NOT_FOUND("존재하지 않는 친구입니다.", NOT_FOUND),
+
     /* CategoryService */
     ALREADY_EXISTS_CATEGORY("이미 존재하는 카테고리입니다.", CONFLICT),
 
