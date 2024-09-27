@@ -4,10 +4,13 @@ import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
+import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.service.DiaryService;
+import com.potatocake.everymoment.service.FriendDiaryService;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiaryController {
 
     private final DiaryService diaryService;
+    private final FriendDiaryService friendDiaryService;
 
     //자동 일기 작성
     @PostMapping("/auto")
@@ -40,7 +44,6 @@ public class DiaryController {
                 .message("success")
                 .info(notificationResponse)
                 .build();
-
         return ResponseEntity.ok(response);
     }
 
@@ -54,7 +57,6 @@ public class DiaryController {
                 .message("success")
                 .info(null)
                 .build();
-
         return ResponseEntity.ok(response);
     }
 
@@ -89,7 +91,6 @@ public class DiaryController {
                 .message("success")
                 .info(myDiariesResponse)
                 .build();
-
         return ResponseEntity.ok(response);
     }
 
@@ -102,7 +103,6 @@ public class DiaryController {
                 .message("success")
                 .info(myDiaryResponse)
                 .build();
-
         return ResponseEntity.ok(response);
     }
 
@@ -151,6 +151,52 @@ public class DiaryController {
                 .code(HttpStatus.OK.value())
                 .message("success")
                 .info(null)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    //전체 친구 일기 조회
+    @GetMapping("/friend")
+    public ResponseEntity<SuccessResponse<FriendDiariesResponse>> getFriendDiaries(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String emoji,
+            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate until,
+            @RequestParam(required = false) Boolean bookmark,
+            @RequestParam(defaultValue = "0") int key,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
+                .keyword(keyword)
+                .emoji(emoji)
+                .category(category)
+                .date(date)
+                .from(from)
+                .until(until)
+                .bookmark(bookmark)
+                .key(key)
+                .size(size)
+                .build();
+
+        FriendDiariesResponse diaries = friendDiaryService.getFriendDiaries(diaryFilterRequest);
+        SuccessResponse<FriendDiariesResponse> response = SuccessResponse.<FriendDiariesResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(diaries)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    //친구 일기 상제 조회
+    @GetMapping("/friend/{id}")
+    public ResponseEntity<SuccessResponse<FriendDiaryResponse>> getFriendDiary(@PathVariable Long id) {
+        FriendDiaryResponse diary = friendDiaryService.getFriendDiary(id);
+        SuccessResponse<FriendDiaryResponse> response = SuccessResponse.<FriendDiaryResponse>builder()
+                .code(HttpStatus.OK.value())
+                .message("success")
+                .info(diary)
                 .build();
         return ResponseEntity.ok(response);
     }
