@@ -41,8 +41,6 @@ public enum ErrorCode {
     LOGIN_FAILED("로그인에 실패했습니다.", UNAUTHORIZED),
     LOGIN_REQUIRED("유효한 인증 정보가 필요합니다.", UNAUTHORIZED),
 
-    MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", NOT_FOUND),
-
     /* S3FileUploader */
     INVALID_FILE_TYPE("이미지 파일 형식만 첨부가 가능합니다. (JPEG, PNG)", UNSUPPORTED_MEDIA_TYPE),
     FILE_STORE_FAILED("파일 저장에 실패했습니다.", INTERNAL_SERVER_ERROR),
