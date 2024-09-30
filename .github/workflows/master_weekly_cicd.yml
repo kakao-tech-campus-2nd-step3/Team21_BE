@@ -1,4 +1,4 @@
-name: master 브랜치 merge 시 CI/CD 파이프라인
+name: master 및 weekly 브랜치 merge 시 CI/CD 파이프라인
 
 on:
   push:
