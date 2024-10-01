@@ -8,9 +8,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class File extends BaseTimeEntity {
 
@@ -26,5 +30,13 @@ public class File extends BaseTimeEntity {
 
     @Column(name = "\"order\"")
     private Integer order;
+
+    @Builder
+    public File(Long id, Diary diary, String imageUrl, Integer order) {
+        this.id = id;
+        this.diary = diary;
+        this.imageUrl = imageUrl;
+        this.order = order;
+    }
 
 }

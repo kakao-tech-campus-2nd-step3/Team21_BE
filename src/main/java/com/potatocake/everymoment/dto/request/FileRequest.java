@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class FileRequest {
-    private String imageUrl;
+    private String filename;
     private int order;
 }
