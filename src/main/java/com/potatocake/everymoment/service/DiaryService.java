@@ -5,9 +5,6 @@ import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.FileResponse;
-import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
-import com.potatocake.everymoment.dto.response.FriendDiarySimpleResponse;
-import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiarySimpleResponse;
@@ -21,15 +18,11 @@ import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
-import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
 import com.potatocake.everymoment.security.MemberDetails;
-import com.potatocake.everymoment.util.JwtUtil;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -207,7 +200,7 @@ public class DiaryService {
     }
 
     // 로그인한 유저의 일기가 맞는지 확인 후 일기 반환
-    private Diary getExistDiary(Long diaryId){
+    private Diary getExistDiary(Long diaryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
         Member currentMember = memberDetails.getMember();
@@ -215,7 +208,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
-        if(!Objects.equals(currentMember.getId(), diary.getMemberId().getId())){
+        if (!Objects.equals(currentMember.getId(), diary.getMemberId().getId())) {
             throw new GlobalException(ErrorCode.DIARY_NOT_FOUND);
         }
 

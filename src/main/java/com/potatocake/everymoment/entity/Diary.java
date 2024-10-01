@@ -3,7 +3,6 @@ package com.potatocake.everymoment.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -99,4 +98,9 @@ public class Diary extends BaseTimeEntity {
     public void togglePublic() {
         this.isPublic = !this.isPublic;
     }
+
+    public boolean checkOwner(Long memberId) {
+        return this.memberId.getId().equals(memberId);
+    }
+
 }
