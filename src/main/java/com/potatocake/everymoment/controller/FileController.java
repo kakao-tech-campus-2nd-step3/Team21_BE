@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +40,17 @@ public class FileController {
                                                        @RequestPart List<MultipartFile> files,
                                                        @RequestPart List<FileRequest> info) {
         fileService.uploadFiles(diaryId, memberDetails.getId(), files, info);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok());
+    }
+
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SuccessResponse> updateFiles(@PathVariable Long diaryId,
+                                                       @AuthenticationPrincipal MemberDetails memberDetails,
+                                                       @RequestPart List<MultipartFile> files,
+                                                       @RequestPart List<FileRequest> info) {
+        fileService.updateFiles(diaryId, memberDetails.getId(), files, info);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());

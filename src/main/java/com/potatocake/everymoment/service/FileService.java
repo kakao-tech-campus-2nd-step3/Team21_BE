@@ -65,4 +65,15 @@ public class FileService {
         fileRepository.saveAll(fileEntities);
     }
 
+    public void updateFiles(Long diaryId, Long memberId, List<MultipartFile> files, List<FileRequest> infos) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
+
+        diary.checkOwner(memberId);
+
+        fileRepository.deleteByDiary(diary);
+
+        uploadFiles(diaryId, memberId, files, infos);
+    }
+
 }
