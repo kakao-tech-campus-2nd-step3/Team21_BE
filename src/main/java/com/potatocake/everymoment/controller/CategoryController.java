@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +49,15 @@ public class CategoryController {
                                                           @RequestBody @Valid CategoryCreateRequest request,
                                                           @AuthenticationPrincipal MemberDetails memberDetails) {
         categoryService.updateCategory(categoryId, memberDetails.getId(), request);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok());
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<SuccessResponse> deleteCategory(@PathVariable Long categoryId,
+                                                          @AuthenticationPrincipal MemberDetails memberDetails) {
+        categoryService.deleteCategory(categoryId, memberDetails.getId());
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());

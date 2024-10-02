@@ -43,4 +43,13 @@ public class CategoryService {
         category.update(request.getCategoryName());
     }
 
+    public void deleteCategory(Long categoryId, Long memberId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        category.checkOwner(memberId);
+
+        categoryRepository.delete(category);
+    }
+
 }
