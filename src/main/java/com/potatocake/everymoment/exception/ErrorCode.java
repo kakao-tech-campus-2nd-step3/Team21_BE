@@ -47,7 +47,10 @@ public enum ErrorCode {
 
     INFO_REQUIRED("정보를 입력해 주세요.", BAD_REQUEST),
 
-    METHOD_NOT_ALLOWED("지원하지 않는 HTTP 메소드입니다.", HttpStatus.METHOD_NOT_ALLOWED);
+    METHOD_NOT_ALLOWED("지원하지 않는 HTTP 메소드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
+
+    /* CategoryService */
+    CATEGORY_NOT_OWNER("본인의 카테고리만 수정할 수 있습니다.", HttpStatus.FORBIDDEN);
 
     private final String message;
     private final HttpStatus status;
