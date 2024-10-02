@@ -8,6 +8,7 @@ import com.potatocake.everymoment.service.FriendRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,4 +41,13 @@ public class FriendRequestController {
                 .body(SuccessResponse.ok());
     }
 
+    @DeleteMapping("/api/friend-requests/{requestId}/reject")
+    public ResponseEntity<SuccessResponse> rejectFriendRequest(@PathVariable Long requestId,
+                                                               @AuthenticationPrincipal MemberDetails memberDetails) {
+        friendRequestService.rejectFriendRequest(requestId, memberDetails.getId());
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok());
+    }
+    
 }

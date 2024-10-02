@@ -52,6 +52,12 @@ public class FriendRequestService {
         friendRequestRepository.delete(friendRequest);
     }
 
+    public void rejectFriendRequest(Long requestId, Long memberId) {
+        FriendRequest friendRequest = findAndValidateFriendRequest(requestId, memberId);
+
+        friendRequestRepository.delete(friendRequest);
+    }
+
     private FriendRequest findAndValidateFriendRequest(Long requestId, Long memberId) {
         FriendRequest friendRequest = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_REQUEST_NOT_FOUND));
