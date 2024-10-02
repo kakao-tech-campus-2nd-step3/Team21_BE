@@ -1,11 +1,13 @@
 package com.potatocake.everymoment.service;
 
 import com.potatocake.everymoment.dto.request.CategoryCreateRequest;
+import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.CategoryRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,12 @@ public class CategoryService {
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         categoryRepository.save(request.toEntity(member));
+    }
+
+    public List<CategoryResponse> getCategories(Long memberId) {
+        return categoryRepository.findByMemberId(memberId).stream()
+                .map(CategoryResponse::from)
+                .toList();
     }
 
 }
