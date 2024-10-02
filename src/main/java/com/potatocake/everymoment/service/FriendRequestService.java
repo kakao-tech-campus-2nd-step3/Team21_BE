@@ -1,5 +1,9 @@
 package com.potatocake.everymoment.service;
 
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
+import com.potatocake.everymoment.dto.response.FriendRequestPageRequest;
+import com.potatocake.everymoment.dto.response.FriendRequestResponse;
 import com.potatocake.everymoment.entity.Friend;
 import com.potatocake.everymoment.entity.FriendRequest;
 import com.potatocake.everymoment.entity.Member;
@@ -8,7 +12,12 @@ import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.FriendRequestRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import com.potatocake.everymoment.util.PagingUtil;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +29,19 @@ public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
+    private final PagingUtil pagingUtil;
+
+    @Transactional(readOnly = true)
+    public FriendRequestPageRequest getFriendRequests(Long key, int size, Long memberId) {
+        Window<FriendRequest> window = fetchFriendRequestWindow(key, size, memberId);
+        List<FriendRequestResponse> requests = convertToFriendRequestResponses(window.getContent());
+        Long nextKey = pagingUtil.getNextKey(window, FriendRequest::getId);
+
+        return FriendRequestPageRequest.builder()
+                .friendRequests(requests)
+                .next(nextKey)
+                .build();
+    }
 
     public void sendFriendRequest(Long senderId, Long receiverId) {
         boolean isAlreadySend = friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId);
@@ -74,6 +96,22 @@ public class FriendRequestService {
                 .memberId(member)
                 .friendId(friend)
                 .build();
+    }
+
+    private Window<FriendRequest> fetchFriendRequestWindow(Long key, int size, Long receiverId) {
+        ScrollPosition scrollPosition = pagingUtil.createScrollPosition(key);
+        Pageable pageable = pagingUtil.createPageable(size, DESC);
+
+        return friendRequestRepository.findByReceiverId(receiverId, scrollPosition, pageable);
+    }
+
+    private List<FriendRequestResponse> convertToFriendRequestResponses(List<FriendRequest> requests) {
+        return requests.stream()
+                .map(request -> FriendRequestResponse.builder()
+                        .id(request.getId())
+                        .senderId(request.getSender().getId())
+                        .build())
+                .toList();
     }
 
 }
