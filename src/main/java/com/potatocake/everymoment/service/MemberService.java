@@ -1,5 +1,7 @@
 package com.potatocake.everymoment.service;
 
+import static org.springframework.data.domain.Sort.Direction.ASC;
+
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
@@ -32,7 +34,7 @@ public class MemberService {
     public MemberSearchResponse searchMembers(String nickname, String email, Long key, int size) {
         Window<Member> window = fetchMemberWindow(nickname, email, key, size);
         List<MemberResponse> members = convertToMemberResponses(window.getContent());
-        Long nextKey = pagingUtil.getNextKey(window);
+        Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
         return MemberSearchResponse.builder()
                 .members(members)
@@ -76,7 +78,7 @@ public class MemberService {
 
     private Window<Member> fetchMemberWindow(String nickname, String email, Long key, int size) {
         ScrollPosition scrollPosition = pagingUtil.createScrollPosition(key);
-        Pageable pageable = pagingUtil.createPageable(size);
+        Pageable pageable = pagingUtil.createPageable(size, ASC);
 
         String searchNickname = (nickname == null) ? "" : nickname;
         String searchEmail = (email == null) ? "" : email;
