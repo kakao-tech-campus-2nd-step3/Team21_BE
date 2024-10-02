@@ -56,7 +56,8 @@ public enum ErrorCode {
     SELF_FRIEND_REQUEST("자기 자신에게 친구 요청을 보낼 수 없습니다.", BAD_REQUEST),
 
     /* FriendRequestService */
-    FRIEND_REQUEST_ALREADY_EXISTS("이미 친구 요청을 보냈습니다.", CONFLICT);
+    FRIEND_REQUEST_ALREADY_EXISTS("이미 친구 요청을 보냈습니다.", CONFLICT),
+    FRIEND_REQUEST_NOT_FOUND("존재하지 않는 친구 요청입니다.", NOT_FOUND);
 
     private final String message;
     private final HttpStatus status;
