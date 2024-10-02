@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.dto.response.LikeCountResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.Like;
 import com.potatocake.everymoment.entity.Member;
@@ -21,6 +22,18 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+
+    @Transactional(readOnly = true)
+    public LikeCountResponse getLikeCount(Long diaryId) {
+        Diary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
+
+        Long likeCount = likeRepository.countByDiary(diary);
+
+        return LikeCountResponse.builder()
+                .likeCount(likeCount)
+                .build();
+    }
 
     public void toggleLike(Long memberId, Long diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
