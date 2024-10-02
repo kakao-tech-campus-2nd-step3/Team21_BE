@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +38,16 @@ public class CategoryController {
     public ResponseEntity<SuccessResponse> addCategory(@RequestBody @Valid CategoryCreateRequest request,
                                                        @AuthenticationPrincipal MemberDetails memberDetails) {
         categoryService.addCategory(memberDetails.getId(), request);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok());
+    }
+
+    @PatchMapping("/{categoryId}")
+    public ResponseEntity<SuccessResponse> updateCategory(@PathVariable Long categoryId,
+                                                          @RequestBody @Valid CategoryCreateRequest request,
+                                                          @AuthenticationPrincipal MemberDetails memberDetails) {
+        categoryService.updateCategory(categoryId, memberDetails.getId(), request);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());

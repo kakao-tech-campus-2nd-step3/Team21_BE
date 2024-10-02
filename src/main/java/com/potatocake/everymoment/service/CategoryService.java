@@ -2,6 +2,7 @@ package com.potatocake.everymoment.service;
 
 import com.potatocake.everymoment.dto.request.CategoryCreateRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
+import com.potatocake.everymoment.entity.Category;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
@@ -31,6 +32,15 @@ public class CategoryService {
         return categoryRepository.findByMemberId(memberId).stream()
                 .map(CategoryResponse::from)
                 .toList();
+    }
+
+    public void updateCategory(Long categoryId, Long memberId, CategoryCreateRequest request) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        category.checkOwner(memberId);
+
+        category.update(request.getCategoryName());
     }
 
 }

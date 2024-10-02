@@ -1,5 +1,7 @@
 package com.potatocake.everymoment.entity;
 
+import com.potatocake.everymoment.exception.ErrorCode;
+import com.potatocake.everymoment.exception.GlobalException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,4 +33,15 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_member_id"), nullable = false)
     private Member member;
+
+    public void checkOwner(Long memberId) {
+        if (!member.getId().equals(memberId)) {
+            throw new GlobalException(ErrorCode.CATEGORY_NOT_OWNER);
+        }
+    }
+
+    public void update(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
 }
