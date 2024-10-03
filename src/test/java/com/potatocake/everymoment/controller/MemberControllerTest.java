@@ -47,17 +47,15 @@ class MemberControllerTest {
     void should_SearchMembers_When_ValidInput() throws Exception {
         // given
         String nickname = "testUser";
-        String email = "test@test.com";
         Long key = 1L;
         int size = 10;
         MemberSearchResponse response = MemberSearchResponse.builder().build();
 
-        given(memberService.searchMembers(nickname, email, key, size)).willReturn(response);
+        given(memberService.searchMembers(nickname, key, size)).willReturn(response);
 
         // when
         ResultActions result = mockMvc.perform(get("/api/members")
                 .param("nickname", nickname)
-                .param("email", email)
                 .param("key", key.toString())
                 .param("size", String.valueOf(size)));
 
@@ -67,7 +65,7 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("success"));
 
-        then(memberService).should().searchMembers(nickname, email, key, size);
+        then(memberService).should().searchMembers(nickname, key, size);
     }
 
     @Test
@@ -75,7 +73,7 @@ class MemberControllerTest {
     void should_ReturnMyInfo_When_ValidMember() throws Exception {
         // given
         Long memberId = 1L;
-        MemberDetails memberDetails = createMemberDetails(memberId, "test@example.com", "test");
+        MemberDetails memberDetails = createMemberDetails(memberId, 1234L, "test");
 
         MemberDetailResponse response = MemberDetailResponse.builder().build();
         given(memberService.getMyInfo(memberId)).willReturn(response);
@@ -120,7 +118,7 @@ class MemberControllerTest {
     void should_UpdateMemberInfo_When_ValidInput() throws Exception {
         // given
         Long memberId = 1L;
-        MemberDetails memberDetails = createMemberDetails(memberId, "test@example.com", "test");
+        MemberDetails memberDetails = createMemberDetails(memberId, 1234L, "test");
 
         MockMultipartFile profileImage = new MockMultipartFile("profileImage", "image.png", "image/png", new byte[]{});
         String nickname = "newNickname";
@@ -154,16 +152,16 @@ class MemberControllerTest {
         then(memberService).shouldHaveNoInteractions();
     }
 
-    private Member createMember(Long memberId, String email, String nickname) {
+    private Member createMember(Long memberId, Long number, String nickname) {
         return Member.builder()
                 .id(memberId)
-                .email(email)
+                .number(number)
                 .nickname(nickname)
                 .build();
     }
 
-    private MemberDetails createMemberDetails(Long memberId, String email, String nickname) {
-        Member member = createMember(memberId, email, nickname);
+    private MemberDetails createMemberDetails(Long memberId, Long number, String nickname) {
+        Member member = createMember(memberId, number, nickname);
         return new MemberDetails(member);
     }
 

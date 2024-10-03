@@ -10,6 +10,5 @@ public class MemberDetailResponse {
     private Long id;
     private String profileImageUrl;
     private String nickname;
-    private String email;
 
 }

@@ -16,8 +16,8 @@ public class MemberAuthenticationService implements UserDetailsService {
     private final MemberRepository memberRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Member member = memberRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String number) throws UsernameNotFoundException {
+        Member member = memberRepository.findByNumber(Long.valueOf(number))
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.LOGIN_FAILED.getMessage()));
 
         return new MemberDetails(member);

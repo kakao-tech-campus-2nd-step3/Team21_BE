@@ -51,8 +51,9 @@ public class FriendService {
 
         Pageable pageable = PageRequest.of(key, size);
 
-        Page<Diary> diaries = diaryRepository.findAll(DiarySpecification.filterDiaries(null, null, date, null, null, null)
-                .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), id)), pageable);
+        Page<Diary> diaries = diaryRepository.findAll(
+                DiarySpecification.filterDiaries(null, null, date, null, null, null)
+                        .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), id)), pageable);
 
         List<FriendDiarySimpleResponse> diaryList = diaries.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -68,7 +69,7 @@ public class FriendService {
 
     //내 친구 목록 조회
     @Transactional(readOnly = true)
-    public FriendListResponse getFriendList(String nickname, String email, int key, int size) {
+    public FriendListResponse getFriendList(String nickname, int key, int size) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
         Member currentMember = memberDetails.getMember();
@@ -76,7 +77,7 @@ public class FriendService {
 
         Pageable pageable = PageRequest.of(key, size);
 
-        Specification<Friend> spec = FriendSpecification.filterFriends(memberId, nickname, email)
+        Specification<Friend> spec = FriendSpecification.filterFriends(memberId, nickname)
                 .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), memberId));
 
         Page<Friend> friends = friendRepository.findAll(spec, pageable);
@@ -147,7 +148,7 @@ public class FriendService {
     }
 
     //친구 프로필 DTO 변환
-    private FriendProfileResponse convertToFriendProfileResponseDTO(Friend friend){
+    private FriendProfileResponse convertToFriendProfileResponseDTO(Friend friend) {
         Member friendMember = friend.getFriendId();
         return FriendProfileResponse.builder()
                 .id(friendMember.getId())

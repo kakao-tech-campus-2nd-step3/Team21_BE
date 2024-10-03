@@ -23,8 +23,8 @@ public class Member extends BaseTimeEntity {
     @Id
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String email;
+    @Column(nullable = false, unique = true)
+    private Long number;
 
     @Column(nullable = false, length = 50)
     private String nickname;

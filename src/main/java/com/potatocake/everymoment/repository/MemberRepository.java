@@ -9,11 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<Member> findByEmail(String email);
+    Optional<Member> findByNumber(Long number);
 
-    boolean existsByEmail(String email);
+    boolean existsByNumber(Long number);
 
-    Window<Member> findByNicknameContainingAndEmailContaining(String nickname, String email, ScrollPosition position,
-                                                              Pageable pageable);
+    Window<Member> findByNicknameContaining(String nickname, ScrollPosition position, Pageable pageable);
 
 }
