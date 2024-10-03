@@ -45,10 +45,9 @@ public class FriendController {
     @GetMapping("/friends")
     public ResponseEntity<SuccessResponse<FriendListResponse>> getFriendList(
             @RequestParam(required = false) String nickname,
-            @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") int key,
             @RequestParam(defaultValue = "10") int size) {
-        FriendListResponse friendList = friendService.getFriendList(nickname, email, key, size);
+        FriendListResponse friendList = friendService.getFriendList(nickname, key, size);
         SuccessResponse<FriendListResponse> response = SuccessResponse.<FriendListResponse>builder()
                 .code(HttpStatus.OK.value())
                 .message("success")

@@ -31,8 +31,8 @@ public class MemberService {
     private final S3FileUploader s3FileUploader;
 
     @Transactional(readOnly = true)
-    public MemberSearchResponse searchMembers(String nickname, String email, Long key, int size) {
-        Window<Member> window = fetchMemberWindow(nickname, email, key, size);
+    public MemberSearchResponse searchMembers(String nickname, Long key, int size) {
+        Window<Member> window = fetchMemberWindow(nickname, key, size);
         List<MemberResponse> members = convertToMemberResponses(window.getContent());
         Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
@@ -51,7 +51,6 @@ public class MemberService {
                 .id(member.getId())
                 .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname())
-                .email(member.getEmail())
                 .build();
     }
 
@@ -76,15 +75,20 @@ public class MemberService {
         member.update(nickname, profileImageUrl);
     }
 
-    private Window<Member> fetchMemberWindow(String nickname, String email, Long key, int size) {
+    public void deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+        
+        memberRepository.delete(member);
+    }
+
+    private Window<Member> fetchMemberWindow(String nickname, Long key, int size) {
         ScrollPosition scrollPosition = pagingUtil.createScrollPosition(key);
         Pageable pageable = pagingUtil.createPageable(size, ASC);
 
         String searchNickname = (nickname == null) ? "" : nickname;
-        String searchEmail = (email == null) ? "" : email;
 
-        return memberRepository.findByNicknameContainingAndEmailContaining(searchNickname, searchEmail, scrollPosition,
-                pageable);
+        return memberRepository.findByNicknameContaining(searchNickname, scrollPosition, pageable);
     }
 
     private List<MemberResponse> convertToMemberResponses(List<Member> members) {
