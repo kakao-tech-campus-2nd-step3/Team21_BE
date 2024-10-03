@@ -75,6 +75,13 @@ public class MemberService {
         member.update(nickname, profileImageUrl);
     }
 
+    public void deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+        
+        memberRepository.delete(member);
+    }
+
     private Window<Member> fetchMemberWindow(String nickname, Long key, int size) {
         ScrollPosition scrollPosition = pagingUtil.createScrollPosition(key);
         Pageable pageable = pagingUtil.createPageable(size, ASC);
