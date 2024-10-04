@@ -40,7 +40,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.NOTIFICATION_NOT_FOUND));
 
-        if(!Objects.equals(currentMember.getId(), notification.getMemberId().getId())){
+        if(!Objects.equals(currentMember.getId(), notification.getMember().getId())){
             throw new GlobalException(ErrorCode.NOTIFICATION_NOT_FOUND);
         }
 

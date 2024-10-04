@@ -64,7 +64,7 @@ public class DiaryService {
         String content = "현재 " + savedDiary.getLocationName() + "에 머무르고 있어요! 지금 기분은 어떠신가요?";
 
         Notification notification = Notification.builder()
-                .memberId(currentMember)
+                .member(currentMember)
                 .content(content)
                 .type("MOOD_CHECK")
                 .targetId(savedDiary.getId())
