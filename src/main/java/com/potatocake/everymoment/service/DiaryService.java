@@ -18,6 +18,7 @@ import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
+import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
 import com.potatocake.everymoment.security.MemberDetails;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,13 +43,13 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final DiaryCategoryRepository diaryCategoryRepository;
     private final NotificationRepository notificationRepository;
+    private final MemberRepository memberRepository;
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
-    public NotificationResponse createDiaryAuto(DiaryAutoCreateRequest diaryAutoCreateRequest) {
+    public NotificationResponse createDiaryAuto(Long memberId, DiaryAutoCreateRequest diaryAutoCreateRequest) {
         // member 가져옴
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = Diary.builder()
                 .memberId(currentMember)
@@ -83,11 +85,10 @@ public class DiaryService {
     }
 
     // 수동 일기 작성
-    public void createDiaryManual(DiaryManualCreateRequest diaryManualCreateRequest) {
+    public void createDiaryManual(Long memberId, DiaryManualCreateRequest diaryManualCreateRequest) {
         // member Id
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = Diary.builder()
                 .memberId(currentMember)
@@ -109,11 +110,10 @@ public class DiaryService {
 
     // 내 일기 전체 조회 (타임라인)
     @Transactional(readOnly = true)
-    public MyDiariesResponse getMyDiaries(DiaryFilterRequest diaryFilterRequest) {
+    public MyDiariesResponse getMyDiaries(Long memberId, DiaryFilterRequest diaryFilterRequest) {
         //member 가져옴
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Page<Diary> diaryPage;
 
@@ -158,14 +158,14 @@ public class DiaryService {
 
     // 내 일기 상세 조회
     @Transactional(readOnly = true)
-    public MyDiaryResponse getMyDiary(Long id) {
-        Diary diary = getExistDiary(id);
+    public MyDiaryResponse getMyDiary(Long memberId, Long diaryId) {
+        Diary diary = getExistDiary(memberId, diaryId);
         return convertToMyDiaryResponseDto(diary);
     }
 
     // 내 일기 수정
-    public void updateDiary(Long id, DiaryManualCreateRequest diaryManualCreateRequest) {
-        Diary existingDiary = getExistDiary(id);
+    public void updateDiary(Long memberId, Long diaryId, DiaryManualCreateRequest diaryManualCreateRequest) {
+        Diary existingDiary = getExistDiary(memberId, diaryId);
 
         //카테고리 업데이트
         //파일 업데이트
@@ -182,28 +182,27 @@ public class DiaryService {
     }
 
     // 내 일기 삭제
-    public void deleteDiary(Long id) {
-        Diary existingDiary = getExistDiary(id);
+    public void deleteDiary(Long memberId, Long diaryId) {
+        Diary existingDiary = getExistDiary(memberId, diaryId);
         diaryRepository.delete(existingDiary);
     }
 
     // 내 일기 북마크 설정
-    public void toggleBookmark(Long id) {
-        Diary existingDiary = getExistDiary(id);
+    public void toggleBookmark(Long memberId, Long diaryId) {
+        Diary existingDiary = getExistDiary(memberId, diaryId);
         existingDiary.toggleBookmark();
     }
 
     // 내 일기 공개 설정
-    public void togglePrivacy(Long id) {
-        Diary existingDiary = getExistDiary(id);
+    public void togglePrivacy(Long memberId, Long diaryId) {
+        Diary existingDiary = getExistDiary(memberId, diaryId);
         existingDiary.togglePublic();
     }
 
     // 로그인한 유저의 일기가 맞는지 확인 후 일기 반환
-    private Diary getExistDiary(Long diaryId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+    private Diary getExistDiary(Long memberId, Long diaryId) {
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
