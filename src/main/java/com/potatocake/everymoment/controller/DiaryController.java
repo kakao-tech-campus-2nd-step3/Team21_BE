@@ -1,9 +1,11 @@
 package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
+import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.response.CommentsResponse;
 import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
@@ -11,6 +13,7 @@ import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.security.MemberDetails;
+import com.potatocake.everymoment.service.CommentService;
 import com.potatocake.everymoment.service.DiaryService;
 import com.potatocake.everymoment.service.FriendDiaryService;
 import java.time.LocalDate;
@@ -36,6 +39,7 @@ public class DiaryController {
 
     private final DiaryService diaryService;
     private final FriendDiaryService friendDiaryService;
+    private final CommentService commentService;
 
     //자동 일기 작성
     @PostMapping("/auto")
@@ -205,5 +209,32 @@ public class DiaryController {
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));
+    }
+
+    //댓글 조회
+    @GetMapping("/{diaryId}/comments")
+    public ResponseEntity<SuccessResponse<CommentsResponse>> getComments(
+            @PathVariable Long diaryId,
+            @RequestParam(defaultValue = "0") int key,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        CommentsResponse response = commentService.getComments(diaryId, key, size);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok(response));
+    }
+
+    //댓글 작성
+    @PostMapping("/{diaryId}/comments")
+    public ResponseEntity<SuccessResponse<Void>> createComment(
+            @AuthenticationPrincipal MemberDetails memberDetails,
+            @PathVariable Long diaryId,
+            @RequestBody CommentRequest commentRequest) {
+        Long memberId = memberDetails.getId();
+
+        commentService.createComment(memberId, diaryId, commentRequest);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok());
     }
 }
