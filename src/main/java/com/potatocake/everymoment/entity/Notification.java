@@ -41,4 +41,8 @@ public class Notification extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long targetId;
+
+    public void updateIsRead() {
+        this.isRead = true;
+    }
 }
