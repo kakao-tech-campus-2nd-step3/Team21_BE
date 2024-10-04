@@ -49,12 +49,11 @@ public class FriendController {
     public ResponseEntity<SuccessResponse<FriendListResponse>> getFriendList(
             @AuthenticationPrincipal MemberDetails memberDetails,
             @RequestParam(required = false) String nickname,
-            @RequestParam(required = false) String email,
             @RequestParam(defaultValue = "0") int key,
             @RequestParam(defaultValue = "10") int size) {
         Long memberId = memberDetails.getId();
 
-        FriendListResponse response = friendService.getFriendList(memberId, nickname, email, key, size);
+        FriendListResponse response = friendService.getFriendList(memberId, nickname, key, size);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));

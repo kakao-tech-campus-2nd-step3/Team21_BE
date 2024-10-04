@@ -53,12 +53,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         MemberLoginRequest loginRequest = getLoginRequest(request);
 
-        if (loginRequest.getEmail() != null && loginRequest.getNickname() != null) {
+        if (loginRequest.getNumber() == null || loginRequest.getNickname() == null) {
+            throw new AuthenticationServiceException("Invalid login request");
+        } else {
             registerIfNotExists(loginRequest);
         }
 
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(
-                loginRequest.getEmail(), DEFAULT_PASSWORD);
+                String.valueOf(loginRequest.getNumber()), DEFAULT_PASSWORD);
 
         return authenticationManager.authenticate(authRequest);
     }
@@ -117,14 +119,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     private void registerIfNotExists(MemberLoginRequest loginRequest) {
-        if (!memberRepository.existsByEmail(loginRequest.getEmail())) {
+        if (!memberRepository.existsByNumber(loginRequest.getNumber())) {
             memberRepository.save(getMember(loginRequest));
         }
     }
 
     private Member getMember(MemberLoginRequest loginRequest) {
         Member member = Member.builder()
-                .email(loginRequest.getEmail())
+                .number(loginRequest.getNumber())
                 .nickname(loginRequest.getNickname())
                 .build();
 

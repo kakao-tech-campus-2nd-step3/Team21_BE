@@ -5,10 +5,9 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class MemberDetailResponse {
+public class FriendRequestResponse {
 
     private Long id;
-    private String profileImageUrl;
-    private String nickname;
+    private Long senderId;
 
 }
