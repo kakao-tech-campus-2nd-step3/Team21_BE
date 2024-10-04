@@ -12,12 +12,16 @@ import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.CommentRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import com.potatocake.everymoment.security.MemberDetails;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +66,33 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+    }
+
+    // 댓글 수정
+    public void updateComment(Long memberId, Long commentId, CommentRequest commentRequest) {
+        Comment comment = getExistComment(memberId, commentId);
+        comment.updateContent(commentRequest.getContent());
+    }
+
+    // 댓글 삭제
+    public void deleteComment(Long memberId, Long commentId) {
+        Comment comment = getExistComment(memberId, commentId);
+        commentRepository.delete(comment);
+    }
+
+    // 로그인한 유저가 쓴 댓글인지 확인하고, 맞을시 댓글 반환
+    private Comment getExistComment(Long memberId, Long commentId) {
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.COMMENT_NOT_FOUND));
+
+        if(!Objects.equals(currentMember.getId(), comment.getMemberId().getId())){
+            throw new GlobalException(ErrorCode.COMMENT_NOT_FOUND);
+        }
+
+        return comment;
     }
 
     // 친구 프로필 DTO 변환
