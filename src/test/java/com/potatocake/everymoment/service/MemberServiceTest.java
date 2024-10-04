@@ -47,24 +47,23 @@ class MemberServiceTest {
     void should_ReturnMemberList_When_ValidSearchConditions() {
         // given
         String nickname = "testUser";
-        String email = "test@test.com";
         Long key = 1L;
         int size = 10;
 
         List<Member> members = List.of(Member.builder().build());
         Window<Member> window = Window.from(members, ScrollPosition::offset, false);
-        given(memberRepository.findByNicknameContainingAndEmailContaining(anyString(), anyString(), any(), any()))
+        given(memberRepository.findByNicknameContaining(anyString(), any(), any()))
                 .willReturn(window);
 
         // when
-        MemberSearchResponse result = memberService.searchMembers(nickname, email, key, size);
+        MemberSearchResponse result = memberService.searchMembers(nickname, key, size);
 
         // then
         assertThat(result).isNotNull();
         assertThat(result.getMembers()).isNotEmpty();
 
         then(memberRepository).should()
-                .findByNicknameContainingAndEmailContaining(anyString(), anyString(), any(), any());
+                .findByNicknameContaining(anyString(), any(), any());
     }
 
     @Test
