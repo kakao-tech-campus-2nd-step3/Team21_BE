@@ -61,8 +61,8 @@ public class CommentService {
 
         Comment comment = Comment.builder()
                 .content(commentRequest.getContent())
-                .memberId(currentMember)
-                .diaryId(diary)
+                .member(currentMember)
+                .diary(diary)
                 .build();
 
         commentRepository.save(comment);
@@ -88,7 +88,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!Objects.equals(currentMember.getId(), comment.getMemberId().getId())){
+        if(!Objects.equals(currentMember.getId(), comment.getMember().getId())){
             throw new GlobalException(ErrorCode.COMMENT_NOT_FOUND);
         }
 
@@ -108,7 +108,7 @@ public class CommentService {
     private CommentResponse convertToCommentResponseDTO(Comment comment){
         return CommentResponse.builder()
                 .id(comment.getId())
-                .commentFriendResponse(convertToCommentFriendResponseDTO(comment.getMemberId()))
+                .commentFriendResponse(convertToCommentFriendResponseDTO(comment.getMember()))
                 .content(comment.getContent())
                 .createdAt(comment.getCreateAt())
                 .build();

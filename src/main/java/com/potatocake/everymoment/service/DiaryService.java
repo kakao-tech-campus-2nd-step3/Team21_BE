@@ -52,7 +52,7 @@ public class DiaryService {
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = Diary.builder()
-                .memberId(currentMember)
+                .member(currentMember)
                 .locationPoint(diaryAutoCreateRequest.getLocationPoint().toString())
                 .locationName(diaryAutoCreateRequest.getLocationName())
                 .address(diaryAutoCreateRequest.getAddress())
@@ -91,7 +91,7 @@ public class DiaryService {
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = Diary.builder()
-                .memberId(currentMember)
+                .member(currentMember)
                 .content(diaryManualCreateRequest.getContent())
                 .locationPoint(diaryManualCreateRequest.getLocationPoint().toString())
                 .locationName(diaryManualCreateRequest.getLocationName())
@@ -133,7 +133,7 @@ public class DiaryService {
 
             // Diary 중에 memberId같은 것 가져옴
             List<Long> DiaryIdList = diaryCategoryList.stream()
-                    .filter(diaryCategory -> diaryCategory.getDiary().getMemberId()
+                    .filter(diaryCategory -> diaryCategory.getDiary().getMember()
                             .equals(currentMember)) // memberId가 일치하는 경우 필터링
                     .map(diaryCategory -> diaryCategory.getDiary().getId())
                     .collect(Collectors.toList());
@@ -207,7 +207,7 @@ public class DiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
-        if (!Objects.equals(currentMember.getId(), diary.getMemberId().getId())) {
+        if (!Objects.equals(currentMember.getId(), diary.getMember().getId())) {
             throw new GlobalException(ErrorCode.DIARY_NOT_FOUND);
         }
 

@@ -64,7 +64,7 @@ public class FriendDiaryService {
 
             // Diary중에 memberId같은 것 가져옴
             List<Long> filteredDiaryIds = diaryCategories.stream()
-                    .filter(diaryCategory -> friendIdList.contains(diaryCategory.getDiary().getMemberId())) // memberIds 목록에서 필터링
+                    .filter(diaryCategory -> friendIdList.contains(diaryCategory.getDiary().getMember())) // memberIds 목록에서 필터링
                     .map(diaryCategory -> diaryCategory.getDiary().getId())
                     .collect(Collectors.toList());
 
@@ -101,7 +101,7 @@ public class FriendDiaryService {
                 .map(Member::getId)
                 .collect(Collectors.toList());
 
-        if(!friendIdList.contains(diary.getMemberId())){
+        if(!friendIdList.contains(diary.getMember())){
             throw new GlobalException(ErrorCode.FRIEND_NOT_FOUND);
         }
         //카테고리 찾음

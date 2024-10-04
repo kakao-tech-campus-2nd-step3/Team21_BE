@@ -26,11 +26,11 @@ public class Comment extends BaseTimeEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Member memberId;
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Diary diaryId;
+    private Diary diary;
 
     @Lob
     private String content;
