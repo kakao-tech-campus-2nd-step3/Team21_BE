@@ -27,7 +27,7 @@ public class Diary extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Member memberId;
+    private Member member;
 
     @Lob
     private String content;
@@ -100,7 +100,7 @@ public class Diary extends BaseTimeEntity {
     }
 
     public boolean checkOwner(Long memberId) {
-        return this.memberId.getId().equals(memberId);
+        return this.member.getId().equals(memberId);
     }
 
 }

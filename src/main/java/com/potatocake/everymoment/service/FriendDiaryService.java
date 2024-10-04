@@ -15,6 +15,7 @@ import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
+import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.security.MemberDetails;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +36,12 @@ public class FriendDiaryService {
     private final DiaryRepository diaryRepository;
     private final DiaryCategoryRepository diaryCategoryRepository;
     private final FriendRepository friendRepository;
+    private final MemberRepository memberRepository;
 
     //친구 일기 조회
-    public FriendDiariesResponse getFriendDiaries(DiaryFilterRequest diaryFilterRequest) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+    public FriendDiariesResponse getFriendDiaries(Long memberId, DiaryFilterRequest diaryFilterRequest) {
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<Member> friends = friendRepository.findAllFriendIdsByMemberId(currentMember);
         List<Long> friendIdList = friends.stream()
@@ -63,7 +64,7 @@ public class FriendDiaryService {
 
             // Diary중에 memberId같은 것 가져옴
             List<Long> filteredDiaryIds = diaryCategories.stream()
-                    .filter(diaryCategory -> friendIdList.contains(diaryCategory.getDiary().getMemberId())) // memberIds 목록에서 필터링
+                    .filter(diaryCategory -> friendIdList.contains(diaryCategory.getDiary().getMember())) // memberIds 목록에서 필터링
                     .map(diaryCategory -> diaryCategory.getDiary().getId())
                     .collect(Collectors.toList());
 
@@ -87,21 +88,20 @@ public class FriendDiaryService {
     }
 
     // 친구 다이어리 하나 조회
-    public FriendDiaryResponse getFriendDiary(Long id) {
-        Diary diary = diaryRepository.findById(id)
+    public FriendDiaryResponse getFriendDiary(Long memberId, Long diaryId) {
+        Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new IllegalArgumentException("Diary not found"));
 
         //글쓴사람이 친구인지 확인
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         List<Member> friends = friendRepository.findAllFriendIdsByMemberId(currentMember);
         List<Long> friendIdList = friends.stream()
                 .map(Member::getId)
                 .collect(Collectors.toList());
 
-        if(!friendIdList.contains(diary.getMemberId())){
+        if(!friendIdList.contains(diary.getMember())){
             throw new GlobalException(ErrorCode.FRIEND_NOT_FOUND);
         }
         //카테고리 찾음

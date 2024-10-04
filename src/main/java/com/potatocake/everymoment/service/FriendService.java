@@ -38,22 +38,20 @@ public class FriendService {
 
     //특정 친구 일기 조회
     @Transactional(readOnly = true)
-    public OneFriendDiariesResponse OneFriendDiariesResponse(Long id, LocalDate date, int key, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+    public OneFriendDiariesResponse OneFriendDiariesResponse(Long memberid, Long friendId, LocalDate date, int key, int size) {
+        Member currentMember = memberRepository.findById(memberid)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         //친구인지 확인
-        Member friend = memberRepository.findById(id)
+        Member friend = memberRepository.findById(friendId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
         friendRepository.findByMemberIdAndFriendId(currentMember, friend)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(key, size);
 
-        Page<Diary> diaries = diaryRepository.findAll(
-                DiarySpecification.filterDiaries(null, null, date, null, null, null)
-                        .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), id)), pageable);
+        Page<Diary> diaries = diaryRepository.findAll(DiarySpecification.filterDiaries(null, null, date, null, null, null)
+                .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), friendId)), pageable);
 
         List<FriendDiarySimpleResponse> diaryList = diaries.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -69,10 +67,10 @@ public class FriendService {
 
     //내 친구 목록 조회
     @Transactional(readOnly = true)
-    public FriendListResponse getFriendList(String nickname, int key, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
+    public FriendListResponse getFriendList(Long memberIdFromController, String nickname, int key, int size) {
+        Member currentMember = memberRepository.findById(memberIdFromController)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+  
         Long memberId = currentMember.getId();
 
         Pageable pageable = PageRequest.of(key, size);
@@ -95,12 +93,10 @@ public class FriendService {
     }
 
     // 친구 삭제
-    public void deleteFriend(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
-
-        Member friendMember = memberRepository.findById(id)
+    public void deleteFriend(Long memberId, Long firendId) {
+        Member currentMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+        Member friendMember = memberRepository.findById(firendId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Friend friendMine = friendRepository.findByMemberIdAndFriendId(currentMember, friendMember)
@@ -113,13 +109,12 @@ public class FriendService {
     }
 
     // 친한 친구 설정(토글)
-    public void toggleCloseFriend(Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
-        Member currentMember = memberDetails.getMember();
-
-        Member friendMember = memberRepository.findById(id)
+    public void toggleCloseFriend(Long memberId, Long friendId) {
+        Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+        Member friendMember = memberRepository.findById(friendId)
+                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
+
         Friend friend = friendRepository.findByMemberIdAndFriendId(currentMember, friendMember)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 

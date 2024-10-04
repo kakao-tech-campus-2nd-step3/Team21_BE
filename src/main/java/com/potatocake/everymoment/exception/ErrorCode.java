@@ -23,6 +23,9 @@ public enum ErrorCode {
     /* Friend */
     FRIEND_NOT_FOUND("존재하지 않는 친구입니다.", NOT_FOUND),
 
+    /* Notification */
+    NOTIFICATION_NOT_FOUND("존재하지 않는 알림입니다.", NOT_FOUND),
+
     /* CategoryService */
     ALREADY_EXISTS_CATEGORY("이미 존재하는 카테고리입니다.", CONFLICT),
 
