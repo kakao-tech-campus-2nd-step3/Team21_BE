@@ -1,6 +1,7 @@
 package com.potatocake.everymoment.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 
 import com.potatocake.everymoment.entity.Member;
 import java.util.List;
@@ -35,7 +36,7 @@ class PagingUtilTest {
     @DisplayName("페이지 정보가 성공적으로 생성된다.")
     void should_CreatePageable_When_ValidSizeProvided() {
         // when
-        Pageable pageable = pagingUtil.createPageable(10);
+        Pageable pageable = pagingUtil.createPageable(10, ASC);
 
         // then
         assertThat(pageable).isNotNull();
@@ -50,7 +51,7 @@ class PagingUtilTest {
         Window<Member> window = Window.from(members, ScrollPosition::offset, true);
 
         // when
-        Long nextKey = pagingUtil.getNextKey(window);
+        Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
         // then
         assertThat(nextKey).isNotNull();
@@ -65,7 +66,7 @@ class PagingUtilTest {
         Window<Member> window = Window.from(members, ScrollPosition::offset, false);
 
         // when
-        Long nextKey = pagingUtil.getNextKey(window);
+        Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
         // then
         assertThat(nextKey).isNull();

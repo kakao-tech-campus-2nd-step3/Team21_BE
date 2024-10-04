@@ -19,58 +19,57 @@ class MemberRepositoryTest {
     private MemberRepository memberRepository;
 
     @Test
-    @DisplayName("이메일로 회원을 성공적으로 조회한다.")
-    void should_FindMemberByEmail_When_EmailExists() {
+    @DisplayName("회원 번호로 회원을 성공적으로 조회한다.")
+    void should_FindMemberByNumber_When_NumberExists() {
         // given
-        String email = "test@test.com";
+        Long number = 1234L;
         memberRepository.save(Member.builder()
-                .email(email)
+                .number(number)
                 .nickname("testUser")
                 .build());
 
         // when
-        Optional<Member> foundMember = memberRepository.findByEmail(email);
+        Optional<Member> foundMember = memberRepository.findByNumber(number);
 
         // then
         assertThat(foundMember).isPresent();
-        assertThat(foundMember.get().getEmail()).isEqualTo(email);
+        assertThat(foundMember.get().getNumber()).isEqualTo(number);
     }
 
     @Test
-    @DisplayName("이메일이 존재하는지 확인한다.")
-    void should_ReturnTrue_When_EmailExists() {
+    @DisplayName("회원 번호가 존재하는지 확인한다.")
+    void should_ReturnTrue_When_NumberExists() {
         // given
-        String email = "test@test.com";
+        Long number = 1234L;
         memberRepository.save(Member.builder()
-                .email(email)
+                .number(number)
                 .nickname("testUser")
                 .build());
 
         // when
-        boolean exists = memberRepository.existsByEmail(email);
+        boolean exists = memberRepository.existsByNumber(number);
 
         // then
         assertThat(exists).isTrue();
     }
 
     @Test
-    @DisplayName("닉네임과 이메일을 포함하여 스크롤 방식으로 회원 목록을 조회한다.")
-    void should_FindByNicknameContainingAndEmailContaining_When_ValidScrollPosition() {
+    @DisplayName("닉네임을 포함하여 스크롤 방식으로 회원 목록을 조회한다.")
+    void should_FindByNicknameContaining_When_ValidScrollPosition() {
         // given
         String nickname = "test";
-        String email = "test";
+        Long number = 1234L;
         for (int i = 1; i <= 15; i++) {
             memberRepository.save(Member.builder()
                     .nickname(nickname + i)
-                    .email(email + i + "@test.com")
+                    .number(number + i)
                     .build());
         }
 
         // when
         ScrollPosition scrollPosition = ScrollPosition.offset();
         PageRequest pageRequest = PageRequest.of(0, 10);
-        Window<Member> window = memberRepository.findByNicknameContainingAndEmailContaining(nickname, email,
-                scrollPosition, pageRequest);
+        Window<Member> window = memberRepository.findByNicknameContaining(nickname, scrollPosition, pageRequest);
 
         // then
         assertThat(window).isNotNull();
@@ -79,15 +78,14 @@ class MemberRepositoryTest {
     }
 
     @Test
-    @DisplayName("닉네임과 이메일이 일치하지 않으면 빈 결과를 반환한다.")
-    void should_ReturnEmpty_When_NoMatchingNicknameAndEmail() {
+    @DisplayName("닉네임으로 검색 결과가 없다면 빈 결과를 반환한다.")
+    void should_ReturnEmpty_When_NoMatchingNickname() {
         // given
         ScrollPosition scrollPosition = ScrollPosition.offset();
         PageRequest pageRequest = PageRequest.of(0, 10);
 
         // when
-        Window<Member> window = memberRepository.findByNicknameContainingAndEmailContaining("nonexistent",
-                "nonexistent@test.com", scrollPosition, pageRequest);
+        Window<Member> window = memberRepository.findByNicknameContaining("nonexistent", scrollPosition, pageRequest);
 
         // then
         assertThat(window.getContent()).isEmpty();

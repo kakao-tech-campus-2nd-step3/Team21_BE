@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -31,6 +32,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final MemberRepository memberRepository;
+
+    private boolean postOnly = true;
 
     public LoginFilter(String filterProcessesUrl, ObjectMapper objectMapper, JwtUtil jwtUtil,
                        MemberRepository memberRepository, AuthenticationManager authenticationManager) {
@@ -44,14 +47,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException {
+        if (this.postOnly && !request.getMethod().equals("POST")) {
+            throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+        }
+
         MemberLoginRequest loginRequest = getLoginRequest(request);
 
-        if (loginRequest.getEmail() != null && loginRequest.getNickname() != null) {
+        if (loginRequest.getNumber() == null || loginRequest.getNickname() == null) {
+            throw new AuthenticationServiceException("Invalid login request");
+        } else {
             registerIfNotExists(loginRequest);
         }
 
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(
-                loginRequest.getEmail(), DEFAULT_PASSWORD);
+                String.valueOf(loginRequest.getNumber()), DEFAULT_PASSWORD);
 
         return authenticationManager.authenticate(authRequest);
     }
@@ -76,13 +85,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException failed) throws IOException, ServletException {
-        ErrorCode loginFailed = ErrorCode.LOGIN_FAILED;
+        ErrorCode errorCode;
+
+        if (failed instanceof AuthenticationServiceException &&
+                failed.getMessage().startsWith("Authentication method not supported")) {
+            errorCode = ErrorCode.METHOD_NOT_ALLOWED;
+        } else {
+            errorCode = ErrorCode.LOGIN_FAILED;
+        }
 
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(loginFailed.getStatus().value());
+        response.setStatus(errorCode.getStatus().value());
 
-        objectMapper.writeValue(response.getWriter(), getErrorResponse(loginFailed));
+        objectMapper.writeValue(response.getWriter(), getErrorResponse(errorCode));
     }
 
     private MemberLoginRequest getLoginRequest(HttpServletRequest request) {
@@ -103,14 +119,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     private void registerIfNotExists(MemberLoginRequest loginRequest) {
-        if (!memberRepository.existsByEmail(loginRequest.getEmail())) {
+        if (!memberRepository.existsByNumber(loginRequest.getNumber())) {
             memberRepository.save(getMember(loginRequest));
         }
     }
 
     private Member getMember(MemberLoginRequest loginRequest) {
         Member member = Member.builder()
-                .email(loginRequest.getEmail())
+                .number(loginRequest.getNumber())
                 .nickname(loginRequest.getNickname())
                 .build();
 

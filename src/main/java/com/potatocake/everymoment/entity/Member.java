@@ -11,11 +11,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE member SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 @Entity
 public class Member extends BaseTimeEntity {
 
@@ -23,14 +27,17 @@ public class Member extends BaseTimeEntity {
     @Id
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String email;
+    @Column(nullable = false, unique = true)
+    private Long number;
 
     @Column(nullable = false, length = 50)
     private String nickname;
 
     @Lob
     private String profileImageUrl;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     public void update(String nickname, String profileImageUrl) {
         this.nickname = nickname;

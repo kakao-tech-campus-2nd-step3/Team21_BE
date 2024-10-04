@@ -27,7 +27,7 @@ public class Notification extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private Member memberId;
+    private Member member;
 
     @Column(nullable = false)
     private String content;
@@ -41,4 +41,8 @@ public class Notification extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long targetId;
+
+    public void updateIsRead() {
+        this.isRead = true;
+    }
 }

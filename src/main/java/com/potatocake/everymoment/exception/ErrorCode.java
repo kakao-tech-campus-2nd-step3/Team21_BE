@@ -23,6 +23,9 @@ public enum ErrorCode {
     /* Friend */
     FRIEND_NOT_FOUND("존재하지 않는 친구입니다.", NOT_FOUND),
 
+    /* Notification */
+    NOTIFICATION_NOT_FOUND("존재하지 않는 알림입니다.", NOT_FOUND),
+
     /* CategoryService */
     ALREADY_EXISTS_CATEGORY("이미 존재하는 카테고리입니다.", CONFLICT),
 
@@ -45,7 +48,19 @@ public enum ErrorCode {
     INVALID_FILE_TYPE("이미지 파일 형식만 첨부가 가능합니다. (JPEG, PNG)", UNSUPPORTED_MEDIA_TYPE),
     FILE_STORE_FAILED("파일 저장에 실패했습니다.", INTERNAL_SERVER_ERROR),
 
-    INFO_REQUIRED("정보를 입력해 주세요.", BAD_REQUEST);
+    INFO_REQUIRED("정보를 입력해 주세요.", BAD_REQUEST),
+
+    METHOD_NOT_ALLOWED("지원하지 않는 HTTP 메소드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
+
+    /* CategoryService */
+    CATEGORY_NOT_OWNER("본인의 카테고리만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+
+    /* FriendRequestController */
+    SELF_FRIEND_REQUEST("자기 자신에게 친구 요청을 보낼 수 없습니다.", BAD_REQUEST),
+
+    /* FriendRequestService */
+    FRIEND_REQUEST_ALREADY_EXISTS("이미 친구 요청을 보냈습니다.", CONFLICT),
+    FRIEND_REQUEST_NOT_FOUND("존재하지 않는 친구 요청입니다.", NOT_FOUND);
 
     private final String message;
     private final HttpStatus status;
