@@ -8,5 +8,5 @@ import lombok.Getter;
 @Builder
 public class MyDiariesResponse {
     private List<MyDiarySimpleResponse> diaries;
-    private Integer key;
+    private Integer next;
 }

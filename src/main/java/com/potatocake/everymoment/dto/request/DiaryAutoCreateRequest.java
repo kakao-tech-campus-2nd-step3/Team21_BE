@@ -4,7 +4,7 @@ import com.potatocake.everymoment.dto.LocationPoint;
 import lombok.Getter;
 
 @Getter
-public class DiaryAutoRequest {
+public class DiaryAutoCreateRequest {
     private LocationPoint locationPoint;
     private String locationName;
     private String address;

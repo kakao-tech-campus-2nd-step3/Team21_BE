@@ -15,6 +15,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,8 +41,12 @@ public class SecurityConfig {
                 .httpBasic(auth -> auth.disable());
 
         http
+                .headers(header -> header.frameOptions(FrameOptionsConfig::sameOrigin));
+
+        http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/members/login", "/h2-console/**", "/error").permitAll()
+                        .requestMatchers("/api/members/login", "/h2-console/**", "/error", "/favicon.ico").permitAll()
+                        .requestMatchers("/swagger-resources/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated());
 
         http

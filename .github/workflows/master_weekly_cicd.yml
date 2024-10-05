@@ -1,9 +1,10 @@
-name: master 브랜치 자동 배포
+name: master 및 weekly 브랜치 merge 시 CI/CD 파이프라인
 
 on:
   push:
     branches:
       - 'master'
+      - 'weekly/**'
 
 jobs:
   deploy:
@@ -18,6 +19,15 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '21'
+
+      - name: AWS S3 관련 정보를 설정 파일에 주입
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: ./src/main/resources/application-prod.yml
+        env:
+          aws.s3.bucket: ${{ secrets.AWS_S3_BUCKET }}
+          aws.s3.accessKey: ${{ secrets.AWS_S3_ACCESS_KEY }}
+          aws.s3.secretKey: ${{ secrets.AWS_S3_SECRET_KEY }}
 
       - name: 빌드로 테스트 수행 및 Jar 파일 생성
         run: |
