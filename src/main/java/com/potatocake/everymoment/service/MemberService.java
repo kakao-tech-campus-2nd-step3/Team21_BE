@@ -70,7 +70,10 @@ public class MemberService {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        String profileImageUrl = s3FileUploader.uploadFile(profileImage);
+        String profileImageUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            profileImageUrl = s3FileUploader.uploadFile(profileImage);
+        }
 
         member.update(nickname, profileImageUrl);
     }
@@ -78,7 +81,7 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-        
+
         memberRepository.delete(member);
     }
 

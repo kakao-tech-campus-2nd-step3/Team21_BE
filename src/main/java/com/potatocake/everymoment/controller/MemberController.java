@@ -97,7 +97,10 @@ public class MemberController {
     }
 
     private void validateProfileUpdate(MultipartFile profileImage, String nickname) {
-        if (profileImage == null && !StringUtils.hasText(nickname)) {
+        boolean isProfileImageEmpty = profileImage == null || profileImage.isEmpty();
+        boolean isNicknameEmpty = !StringUtils.hasText(nickname);
+        
+        if (isProfileImageEmpty && isNicknameEmpty) {
             throw new GlobalException(ErrorCode.INFO_REQUIRED);
         }
     }
