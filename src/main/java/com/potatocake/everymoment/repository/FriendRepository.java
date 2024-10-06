@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface FriendRepository extends JpaRepository<Friend, Long>, JpaSpecificationExecutor<Friend> {
 
-    Optional<Friend> findByMemberIdAndFriendId(Member member, Member friend);
+    Optional<Friend> findByMemberAndFriend(Member member, Member friend);
 
-    List<Member> findAllFriendIdsByMemberId(Member member);
+    List<Friend> findFriendsByMember(Member member);
 
 }

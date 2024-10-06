@@ -20,7 +20,6 @@ import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
-import com.potatocake.everymoment.security.MemberDetails;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,9 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,7 +118,7 @@ public class DiaryService {
             Specification<Diary> spec = DiarySpecification.filterDiaries(diaryFilterRequest.getKeyword(),
                             diaryFilterRequest.getEmoji(), diaryFilterRequest.getDate(), diaryFilterRequest.getFrom(),
                             diaryFilterRequest.getUntil(), diaryFilterRequest.getBookmark())
-                    .and((root, query, builder) -> builder.equal(root.get("memberId"), currentMember));
+                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,
                     PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
