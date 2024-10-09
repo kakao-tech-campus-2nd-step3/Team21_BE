@@ -10,5 +10,6 @@ public class MemberSearchResultResponse {
     private Long id;
     private String profileImageUrl;
     private String nickname;
+    private FriendRequestStatus friendRequestStatus;
 
 }

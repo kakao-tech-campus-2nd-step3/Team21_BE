@@ -51,9 +51,10 @@ public class MemberController {
     public ResponseEntity<SuccessResponse<MemberSearchResponse>> searchMembers(
             @RequestParam(required = false) String nickname,
             @RequestParam(required = false) Long key,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        MemberSearchResponse response = memberService.searchMembers(nickname, key, size);
+        MemberSearchResponse response = memberService.searchMembers(nickname, key, size, memberDetails.getId());
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));
