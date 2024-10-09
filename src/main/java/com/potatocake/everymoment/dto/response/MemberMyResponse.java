@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class MemberResponse {
+public class MemberMyResponse {
 
     private Long id;
     private String profileImageUrl;

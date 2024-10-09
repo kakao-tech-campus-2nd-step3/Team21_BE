@@ -1,6 +1,7 @@
 package com.potatocake.everymoment.repository;
 
 import com.potatocake.everymoment.entity.FriendRequest;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
@@ -11,5 +12,7 @@ public interface FriendRequestRepository extends JpaRepository<FriendRequest, Lo
     boolean existsBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
     Window<FriendRequest> findByReceiverId(Long receiverId, ScrollPosition scrollPosition, Pageable pageable);
+
+    Optional<FriendRequest> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 
 }
