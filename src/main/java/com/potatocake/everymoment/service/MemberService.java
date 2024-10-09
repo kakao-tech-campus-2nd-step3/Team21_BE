@@ -7,7 +7,6 @@ import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberMyResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResultResponse;
-import com.potatocake.everymoment.entity.FriendRequest;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
@@ -17,7 +16,6 @@ import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import com.potatocake.everymoment.util.S3FileUploader;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -113,28 +111,22 @@ public class MemberService {
                 .collect(Collectors.toList());
     }
 
-    private FriendRequestStatus getFriendRequestStatus(Long currentMemberId, Long targetUserId) {
-        if (currentMemberId.equals(targetUserId)) {
+    private FriendRequestStatus getFriendRequestStatus(Long currentMemberId, Long targetMemberId) {
+        if (currentMemberId.equals(targetMemberId)) {
             return FriendRequestStatus.SELF;
         }
 
-        if (friendRepository.existsByMemberIdAndFriendId(currentMemberId, targetUserId)) {
+        if (friendRepository.existsByMemberIdAndFriendId(currentMemberId, targetMemberId)) {
             return FriendRequestStatus.FRIENDS;
         }
 
-        Optional<FriendRequest> sentRequest = friendRequestRepository.findBySenderIdAndReceiverId(currentMemberId,
-                targetUserId);
-        if (sentRequest.isPresent()) {
-            return FriendRequestStatus.SENT;
-        }
-
-        Optional<FriendRequest> receivedRequest = friendRequestRepository.findBySenderIdAndReceiverId(targetUserId,
-                currentMemberId);
-        if (receivedRequest.isPresent()) {
-            return FriendRequestStatus.RECEIVED;
-        }
-
-        return FriendRequestStatus.NONE;
+        return friendRequestRepository.findBySenderIdAndReceiverId(currentMemberId, targetMemberId)
+                .map(request -> FriendRequestStatus.SENT)
+                .orElseGet(() ->
+                        friendRequestRepository.findBySenderIdAndReceiverId(targetMemberId, currentMemberId)
+                                .map(request -> FriendRequestStatus.RECEIVED)
+                                .orElse(FriendRequestStatus.NONE)
+                );
     }
 
 }
