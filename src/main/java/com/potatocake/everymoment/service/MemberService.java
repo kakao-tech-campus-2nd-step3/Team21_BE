@@ -117,7 +117,7 @@ public class MemberService {
         }
 
         if (friendRepository.existsByMemberIdAndFriendId(currentMemberId, targetMemberId)) {
-            return FriendRequestStatus.FRIENDS;
+            return FriendRequestStatus.FRIEND;
         }
 
         return friendRequestRepository.findBySenderIdAndReceiverId(currentMemberId, targetMemberId)
