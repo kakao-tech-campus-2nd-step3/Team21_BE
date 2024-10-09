@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public class MemberSearchResponse {
 
-    private List<MemberResponse> members;
+    private List<MemberSearchResultResponse> members;
     private Long next;
 
 }

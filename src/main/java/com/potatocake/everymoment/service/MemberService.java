@@ -3,8 +3,9 @@ package com.potatocake.everymoment.service;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
-import com.potatocake.everymoment.dto.response.MemberResponse;
+import com.potatocake.everymoment.dto.response.MemberMyResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
+import com.potatocake.everymoment.dto.response.MemberSearchResultResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
@@ -33,7 +34,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberSearchResponse searchMembers(String nickname, Long key, int size) {
         Window<Member> window = fetchMemberWindow(nickname, key, size);
-        List<MemberResponse> members = convertToMemberResponses(window.getContent());
+        List<MemberSearchResultResponse> members = convertToMemberResponses(window.getContent());
         Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
         return MemberSearchResponse.builder()
@@ -55,11 +56,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public MemberResponse getMemberInfo(Long memberId) {
+    public MemberMyResponse getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return MemberResponse.builder()
+        return MemberMyResponse.builder()
                 .id(member.getId())
                 .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname())
@@ -94,9 +95,9 @@ public class MemberService {
         return memberRepository.findByNicknameContaining(searchNickname, scrollPosition, pageable);
     }
 
-    private List<MemberResponse> convertToMemberResponses(List<Member> members) {
+    private List<MemberSearchResultResponse> convertToMemberResponses(List<Member> members) {
         return members.stream()
-                .map(member -> MemberResponse.builder()
+                .map(member -> MemberSearchResultResponse.builder()
                         .id(member.getId())
                         .profileImageUrl(member.getProfileImageUrl())
                         .nickname(member.getNickname())

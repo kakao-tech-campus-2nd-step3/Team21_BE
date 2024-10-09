@@ -14,8 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
-import com.potatocake.everymoment.dto.response.MemberResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
+import com.potatocake.everymoment.dto.response.MemberSearchResultResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.MemberService;
@@ -96,7 +96,7 @@ class MemberControllerTest {
     void should_ReturnMemberInfo_When_ValidMemberId() throws Exception {
         // given
         Long memberId = 1L;
-        MemberResponse response = MemberResponse.builder().build();
+        MemberSearchResultResponse response = MemberSearchResultResponse.builder().build();
 
         given(memberService.getMemberInfo(memberId)).willReturn(response);
 

@@ -4,7 +4,7 @@ import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.MemberLoginRequest;
 import com.potatocake.everymoment.dto.response.JwtResponse;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
-import com.potatocake.everymoment.dto.response.MemberResponse;
+import com.potatocake.everymoment.dto.response.MemberMyResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
@@ -69,8 +69,8 @@ public class MemberController {
     }
 
     @GetMapping("/{memberId}")
-    public ResponseEntity<SuccessResponse<MemberResponse>> memberInfo(@PathVariable Long memberId) {
-        MemberResponse response = memberService.getMemberInfo(memberId);
+    public ResponseEntity<SuccessResponse<MemberMyResponse>> memberInfo(@PathVariable Long memberId) {
+        MemberMyResponse response = memberService.getMemberInfo(memberId);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));
@@ -99,7 +99,7 @@ public class MemberController {
     private void validateProfileUpdate(MultipartFile profileImage, String nickname) {
         boolean isProfileImageEmpty = profileImage == null || profileImage.isEmpty();
         boolean isNicknameEmpty = !StringUtils.hasText(nickname);
-        
+
         if (isProfileImageEmpty && isNicknameEmpty) {
             throw new GlobalException(ErrorCode.INFO_REQUIRED);
         }
