@@ -14,8 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
+import com.potatocake.everymoment.dto.response.MemberMyResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
-import com.potatocake.everymoment.dto.response.MemberSearchResultResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.MemberService;
@@ -49,12 +49,17 @@ class MemberControllerTest {
         String nickname = "testUser";
         Long key = 1L;
         int size = 10;
+
+        Long memberId = 1L;
+        MemberDetails memberDetails = createMemberDetails(memberId, 1234L, "test");
+
         MemberSearchResponse response = MemberSearchResponse.builder().build();
 
-        given(memberService.searchMembers(nickname, key, size)).willReturn(response);
+        given(memberService.searchMembers(nickname, key, size, memberId)).willReturn(response);
 
         // when
         ResultActions result = mockMvc.perform(get("/api/members")
+                .with(user(memberDetails))
                 .param("nickname", nickname)
                 .param("key", key.toString())
                 .param("size", String.valueOf(size)));
@@ -65,7 +70,7 @@ class MemberControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.message").value("success"));
 
-        then(memberService).should().searchMembers(nickname, key, size);
+        then(memberService).should().searchMembers(nickname, key, size, memberId);
     }
 
     @Test
@@ -96,7 +101,7 @@ class MemberControllerTest {
     void should_ReturnMemberInfo_When_ValidMemberId() throws Exception {
         // given
         Long memberId = 1L;
-        MemberSearchResultResponse response = MemberSearchResultResponse.builder().build();
+        MemberMyResponse response = MemberMyResponse.builder().build();
 
         given(memberService.getMemberInfo(memberId)).willReturn(response);
 
