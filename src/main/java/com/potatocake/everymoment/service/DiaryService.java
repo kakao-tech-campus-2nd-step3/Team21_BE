@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.dto.LocationPoint;
 import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
@@ -195,6 +196,17 @@ public class DiaryService {
     public MyDiaryResponse getMyDiary(Long memberId, Long diaryId) {
         Diary diary = getExistDiary(memberId, diaryId);
         return convertToMyDiaryResponseDto(diary);
+    }
+
+    // 내 일기 위치 조회
+    public LocationPoint getDiaryLocation(Long memberId, Long diaryId) {
+        Diary diary = getExistDiary(memberId, diaryId);
+        List<String> locations = List.of(diary.getLocationPoint().split("/"));
+
+        return LocationPoint.builder()
+                .latitude(Double.parseDouble(locations.get(0)))
+                .longitude(Double.parseDouble(locations.get(1)))
+                .build();
     }
 
     // 내 일기 수정

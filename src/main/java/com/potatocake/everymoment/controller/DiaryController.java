@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.controller;
 
+import com.potatocake.everymoment.dto.LocationPoint;
 import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
@@ -111,6 +112,19 @@ public class DiaryController {
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));
     }
+
+    @GetMapping("/location/{diaryId}")
+    public ResponseEntity<SuccessResponse<LocationPoint>> getLocation(
+            @AuthenticationPrincipal MemberDetails memberDetails,
+            @PathVariable Long diaryId) {
+        Long memberId = memberDetails.getId();
+
+        LocationPoint response = diaryService.getDiaryLocation(memberId, diaryId);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok(response));
+    }
+
 
     //일기 수정
     @PatchMapping("/{diaryId}")
