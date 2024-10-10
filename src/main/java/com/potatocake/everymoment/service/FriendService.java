@@ -6,11 +6,13 @@ import com.potatocake.everymoment.dto.response.FriendProfileResponse;
 import com.potatocake.everymoment.dto.response.OneFriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
+import com.potatocake.everymoment.entity.File;
 import com.potatocake.everymoment.entity.Friend;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryRepository;
+import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import java.time.LocalDate;
@@ -32,6 +34,7 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
+    private final FileRepository fileRepository;
 
     //특정 친구 일기 조회
     @Transactional(readOnly = true)
@@ -124,10 +127,14 @@ public class FriendService {
     //다이어리 DTO 변환
     private FriendDiarySimpleResponse convertToFriendDiariesResponseDTO(Diary savedDiary) {
         //파일 찾음
-        ThumbnailResponse thumbnailResponse = ThumbnailResponse.builder()
-                .id(1L)
-                .imageUrl("image1.url")
-                .build();
+        File thumbnailFile = fileRepository.findByDiaryAndOrder(savedDiary, 1);
+        ThumbnailResponse thumbnailResponse = null;
+        if (thumbnailFile != null) {
+            thumbnailResponse = ThumbnailResponse.builder()
+                    .id(thumbnailFile.getId())
+                    .imageUrl(thumbnailFile.getImageUrl())
+                    .build();
+        }
 
         return FriendDiarySimpleResponse.builder()
                 .id(savedDiary.getId())

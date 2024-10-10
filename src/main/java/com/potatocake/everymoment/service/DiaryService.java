@@ -1,8 +1,10 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.request.FileRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
@@ -12,14 +14,18 @@ import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.DiaryCategory;
+import com.potatocake.everymoment.entity.File;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.entity.Notification;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
+import com.potatocake.everymoment.repository.CategoryRepository;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
+import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
+import com.potatocake.everymoment.security.MemberDetails;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,6 +34,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +49,8 @@ public class DiaryService {
     private final DiaryCategoryRepository diaryCategoryRepository;
     private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
+    private final CategoryRepository categoryRepository;
+    private final FileRepository fileRepository;
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
     public NotificationResponse createDiaryAuto(Long memberId, DiaryAutoCreateRequest diaryAutoCreateRequest) {
@@ -99,9 +110,36 @@ public class DiaryService {
 
         Diary savedDiary = diaryRepository.save(diary);
 
-        Long diaryId = savedDiary.getId();
         //카테고리 저장
+        List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
+        for (CategoryRequest categoryRequest : categoryRequestList) {
+            Long categoryId = categoryRequest.getCategoryId();
+
+            DiaryCategory diaryCategory = DiaryCategory.builder()
+                    .diary(savedDiary)
+                    .category(categoryRepository.findById(categoryId)
+                            .map(category -> {
+                                // Category가 현재 사용자의 소유인지 확인
+                                category.checkOwner(currentMember.getId());
+                                return category;
+                            })
+                            .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
+                    .build();
+
+            diaryCategoryRepository.save(diaryCategory);
+
+        }
         //파일 저장
+        List<FileRequest> fileRequestList = diaryManualCreateRequest.getFile();
+        for (FileRequest fileRequest : fileRequestList) {
+            File file = File.builder()
+                    .diary(savedDiary)
+                    .imageUrl(fileRequest.getImageUrl())
+                    .order(fileRequest.getOrder())
+                    .build();
+
+            fileRepository.save(file);
+        }
     }
 
     // 내 일기 전체 조회 (타임라인)
@@ -118,7 +156,7 @@ public class DiaryService {
             Specification<Diary> spec = DiarySpecification.filterDiaries(diaryFilterRequest.getKeyword(),
                             diaryFilterRequest.getEmoji(), diaryFilterRequest.getDate(), diaryFilterRequest.getFrom(),
                             diaryFilterRequest.getUntil(), diaryFilterRequest.getBookmark())
-                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+                    .and((root, query, builder) -> builder.equal(root.get("memberId"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,
                     PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
@@ -163,8 +201,43 @@ public class DiaryService {
     public void updateDiary(Long memberId, Long diaryId, DiaryManualCreateRequest diaryManualCreateRequest) {
         Diary existingDiary = getExistDiary(memberId, diaryId);
 
-        //카테고리 업데이트
-        //파일 업데이트
+        // 카테고리 업데이트
+        List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
+        if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+            diaryCategoryRepository.deleteByDiary(existingDiary);
+
+            for (CategoryRequest categoryRequest : categoryRequestList) {
+                Long categoryId = categoryRequest.getCategoryId();
+
+                DiaryCategory diaryCategory = DiaryCategory.builder()
+                        .diary(existingDiary)
+                        .category(categoryRepository.findById(categoryId)
+                                .map(category -> {
+                                    category.checkOwner(memberId);
+                                    return category;
+                                })
+                                .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
+                        .build();
+
+                diaryCategoryRepository.save(diaryCategory);
+            }
+        }
+
+        // 파일 업데이트
+        List<FileRequest> fileRequestList = diaryManualCreateRequest.getFile();
+        if (fileRequestList != null && !fileRequestList.isEmpty()) {
+            fileRepository.deleteByDiary(existingDiary);
+
+            for (FileRequest fileRequest : fileRequestList) {
+                File file = File.builder()
+                        .diary(existingDiary)
+                        .imageUrl(fileRequest.getImageUrl())
+                        .order(fileRequest.getOrder())
+                        .build();
+
+                fileRepository.save(file);
+            }
+        }
 
         //다이어리 업데이트
         existingDiary.updateContent(diaryManualCreateRequest.getContent());
@@ -212,22 +285,24 @@ public class DiaryService {
 
     //상세 조회시 일기DTO 변환
     private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary) {
-        //카테고리 찾음
-        CategoryResponse categoryResponse = CategoryResponse.builder()
-                .id(1L)
-                .categoryName("일상")
-                .build();
-        List<CategoryResponse> categoryResponseList = new ArrayList<>();
-        categoryResponseList.add(categoryResponse);
+        // 카테고리 찾음
+        List<DiaryCategory> diaryCategories = diaryCategoryRepository.findByDiary(savedDiary);
+        List<CategoryResponse> categoryResponseList = diaryCategories.stream()
+                .map(diaryCategory -> CategoryResponse.builder()
+                        .id(diaryCategory.getCategory().getId())
+                        .categoryName(diaryCategory.getCategory().getCategoryName())
+                        .build())
+                .collect(Collectors.toList());
 
-        //파일 찾음
-        FileResponse fileResponse = FileResponse.builder()
-                .id(1L)
-                .imageUrl("image1.url")
-                .order(1)
-                .build();
-        List<FileResponse> fileResponseList = new ArrayList<>();
-        fileResponseList.add(fileResponse);
+        // 파일 찾음
+        List<File> files = fileRepository.findByDiary(savedDiary);
+        List<FileResponse> fileResponseList = files.stream()
+                .map(file -> FileResponse.builder()
+                        .id(file.getId())
+                        .imageUrl(file.getImageUrl())
+                        .order(file.getOrder())
+                        .build())
+                .collect(Collectors.toList());
 
         return MyDiaryResponse.builder()
                 .id(savedDiary.getId())
@@ -244,11 +319,14 @@ public class DiaryService {
 
     //일기 전체 불러올 때, 일기DTO 변환
     private MyDiarySimpleResponse convertToMyDiarySimpleResponseDto(Diary savedDiary) {
-        //파일 찾음
-        ThumbnailResponse thumbnailResponse = ThumbnailResponse.builder()
-                .id(1L)
-                .imageUrl("image1.url")
-                .build();
+        File thumbnailFile = fileRepository.findByDiaryAndOrder(savedDiary, 1);
+        ThumbnailResponse thumbnailResponse = null;
+        if (thumbnailFile != null) {
+            thumbnailResponse = ThumbnailResponse.builder()
+                    .id(thumbnailFile.getId())
+                    .imageUrl(thumbnailFile.getImageUrl())
+                    .build();
+        }
 
         return MyDiarySimpleResponse.builder()
                 .id(savedDiary.getId())
