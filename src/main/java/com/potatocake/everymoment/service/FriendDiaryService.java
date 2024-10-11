@@ -51,32 +51,21 @@ public class FriendDiaryService {
 
         Page<Diary> diaryPage;
 
-        if (diaryFilterRequest.getCategory() == null) {
-            // category가 null인 경우
-            Specification<Diary> spec = DiarySpecification.filterDiaries(diaryFilterRequest.getKeyword(),
-                            diaryFilterRequest.getEmoji(), diaryFilterRequest.getDate(), diaryFilterRequest.getFrom(),
-                            diaryFilterRequest.getUntil(), diaryFilterRequest.getBookmark())
-                    .and((root, query, builder) -> root.get("member").in(friendIdList)); // memberIds 목록에서 검색
+        // 카테고리와 이모지가 여러 개 전달될 수 있으므로 이를 리스트로 변환
+        List<Long> categoryIds = diaryFilterRequest.getCategories();
+        List<String> emojis = diaryFilterRequest.getEmojis();
 
-            diaryPage = diaryRepository.findAll(spec,
-                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-        } else {
-            // category가 있는 경우 - DiaryCategory에서 category 같은 것 찾음
-            List<DiaryCategory> diaryCategories = diaryCategoryRepository.findByCategoryId(
-                    diaryFilterRequest.getCategory());
+        Specification<Diary> spec = DiarySpecification.filterDiaries(
+                        diaryFilterRequest.getKeyword(),
+                        emojis,
+                        categoryIds,
+                        diaryFilterRequest.getDate(),
+                        diaryFilterRequest.getFrom(),
+                        diaryFilterRequest.getUntil(),
+                        diaryFilterRequest.getIsBookmark())
+                .and((root, query, builder) -> root.get("member").in(friendIdList));
 
-            // Diary중에 memberId같은 것 가져옴
-            List<Long> filteredDiaryIds = diaryCategories.stream()
-                    .filter(diaryCategory -> friendIdList.contains(
-                            diaryCategory.getDiary().getMember())) // memberIds 목록에서 필터링
-                    .map(diaryCategory -> diaryCategory.getDiary().getId())
-                    .collect(Collectors.toList());
-
-            // 가져온 diaryId로 일기 찾음
-            Specification<Diary> spec = (root, query, builder) -> root.get("id").in(filteredDiaryIds);
-            diaryPage = diaryRepository.findAll(spec,
-                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-        }
+        diaryPage = diaryRepository.findAll(spec, PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
 
         List<FriendDiarySimpleResponse> friendDiarySimpleResponseList = diaryPage.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -84,12 +73,10 @@ public class FriendDiaryService {
 
         Integer nextPage = diaryPage.hasNext() ? diaryFilterRequest.getKey() + 1 : null;
 
-        FriendDiariesResponse friendDiariesResponse = FriendDiariesResponse.builder()
+        return FriendDiariesResponse.builder()
                 .diaries(friendDiarySimpleResponseList)
                 .next(nextPage)
                 .build();
-
-        return friendDiariesResponse;
     }
 
     // 친구 다이어리 하나 조회

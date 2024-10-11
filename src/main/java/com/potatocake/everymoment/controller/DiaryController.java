@@ -73,7 +73,7 @@ public class DiaryController {
             @AuthenticationPrincipal MemberDetails memberDetails,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String emoji,
-            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate until,
@@ -82,6 +82,7 @@ public class DiaryController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = memberDetails.getId();
+
         DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
                 .keyword(keyword)
                 .emoji(emoji)
@@ -89,7 +90,7 @@ public class DiaryController {
                 .date(date)
                 .from(from)
                 .until(until)
-                .bookmark(bookmark)
+                .isBookmark(bookmark)
                 .key(key)
                 .size(size)
                 .build();
@@ -185,7 +186,7 @@ public class DiaryController {
             @AuthenticationPrincipal MemberDetails memberDetails,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String emoji,
-            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate until,
@@ -194,6 +195,7 @@ public class DiaryController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = memberDetails.getId();
+
         DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
                 .keyword(keyword)
                 .emoji(emoji)
@@ -201,7 +203,7 @@ public class DiaryController {
                 .date(date)
                 .from(from)
                 .until(until)
-                .bookmark(bookmark)
+                .isBookmark(bookmark)
                 .key(key)
                 .size(size)
                 .build();

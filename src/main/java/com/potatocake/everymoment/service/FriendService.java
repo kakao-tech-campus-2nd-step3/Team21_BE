@@ -52,7 +52,7 @@ public class FriendService {
         Pageable pageable = PageRequest.of(key, size);
 
         Page<Diary> diaries = diaryRepository.findAll(
-                DiarySpecification.filterDiaries(null, null, date, null, null, null)
+                DiarySpecification.filterDiaries(null, null, null, date, null, null, null)
                         .and((root, query, builder) -> builder.equal(root.get("member").get("id"), friendId)),
                 pageable);
 

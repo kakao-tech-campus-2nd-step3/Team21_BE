@@ -146,38 +146,27 @@ public class DiaryService {
     // 내 일기 전체 조회 (타임라인)
     @Transactional(readOnly = true)
     public MyDiariesResponse getMyDiaries(Long memberId, DiaryFilterRequest diaryFilterRequest) {
-        //member 가져옴
+        // member 가져옴
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Page<Diary> diaryPage;
 
-        if (diaryFilterRequest.getCategory() == null) {
-            // category가 null인 경우
-            Specification<Diary> spec = DiarySpecification.filterDiaries(diaryFilterRequest.getKeyword(),
-                            diaryFilterRequest.getEmoji(), diaryFilterRequest.getDate(), diaryFilterRequest.getFrom(),
-                            diaryFilterRequest.getUntil(), diaryFilterRequest.getBookmark())
-                    .and((root, query, builder) -> builder.equal(root.get("memberId"), currentMember));
+        List<Long> categoryIds = diaryFilterRequest.getCategories();
+        List<String> emojis = diaryFilterRequest.getEmojis();
 
-            diaryPage = diaryRepository.findAll(spec,
-                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-        } else {
-            // category가 있는 경우 - DiaryCategory에서 category 같은 것 찾음
-            List<DiaryCategory> diaryCategoryList = diaryCategoryRepository.findByCategoryId(
-                    diaryFilterRequest.getCategory());
+        Specification<Diary> spec = DiarySpecification.filterDiaries(
+                        diaryFilterRequest.getKeyword(),
+                        emojis,
+                        categoryIds,
+                        diaryFilterRequest.getDate(),
+                        diaryFilterRequest.getFrom(),
+                        diaryFilterRequest.getUntil(),
+                        diaryFilterRequest.getIsBookmark())
+                .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
-            // Diary 중에 memberId같은 것 가져옴
-            List<Long> DiaryIdList = diaryCategoryList.stream()
-                    .filter(diaryCategory -> diaryCategory.getDiary().getMember()
-                            .equals(currentMember)) // memberId가 일치하는 경우 필터링
-                    .map(diaryCategory -> diaryCategory.getDiary().getId())
-                    .collect(Collectors.toList());
+        diaryPage = diaryRepository.findAll(spec, PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
 
-            // 가져온 DiaryId로 일기 찾음
-            Specification<Diary> spec = (root, query, builder) -> root.get("id").in(DiaryIdList);
-            diaryPage = diaryRepository.findAll(spec,
-                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-        }
 
         List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
                 .map(this::convertToMyDiarySimpleResponseDto)
