@@ -3,15 +3,20 @@ package com.potatocake.everymoment.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import com.potatocake.everymoment.dto.response.FriendRequestStatus;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.GlobalException;
+import com.potatocake.everymoment.repository.FriendRepository;
+import com.potatocake.everymoment.repository.FriendRequestRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import com.potatocake.everymoment.util.S3FileUploader;
@@ -37,6 +42,12 @@ class MemberServiceTest {
     private MemberRepository memberRepository;
 
     @Mock
+    private FriendRequestRepository friendRequestRepository;
+
+    @Mock
+    private FriendRepository friendRepository;
+
+    @Mock
     private PagingUtil pagingUtil;
 
     @Mock
@@ -49,21 +60,35 @@ class MemberServiceTest {
         String nickname = "testUser";
         Long key = 1L;
         int size = 10;
+        Long currentMemberId = 1L;
 
-        List<Member> members = List.of(Member.builder().build());
+        Member member1 = Member.builder().id(2L).nickname("testUser1").build();
+        Member member2 = Member.builder().id(3L).nickname("testUser2").build();
+        List<Member> members = List.of(member1, member2);
         Window<Member> window = Window.from(members, ScrollPosition::offset, false);
+
         given(memberRepository.findByNicknameContaining(anyString(), any(), any()))
                 .willReturn(window);
+        given(friendRepository.existsByMemberIdAndFriendId(anyLong(), anyLong()))
+                .willReturn(false);
+        given(friendRequestRepository.findBySenderIdAndReceiverId(anyLong(), anyLong()))
+                .willReturn(Optional.empty());
+        given(pagingUtil.getNextKey(any(), any())).willReturn(null);
 
         // when
-        MemberSearchResponse result = memberService.searchMembers(nickname, key, size);
+        MemberSearchResponse result = memberService.searchMembers(nickname, key, size, currentMemberId);
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getMembers()).isNotEmpty();
+        assertThat(result.getMembers()).hasSize(2);
+        assertThat(result.getMembers().get(0).getFriendRequestStatus()).isEqualTo(FriendRequestStatus.NONE);
+        assertThat(result.getMembers().get(1).getFriendRequestStatus()).isEqualTo(FriendRequestStatus.NONE);
+        assertThat(result.getNext()).isNull();
 
-        then(memberRepository).should()
-                .findByNicknameContaining(anyString(), any(), any());
+        then(memberRepository).should().findByNicknameContaining(anyString(), any(), any());
+        then(friendRepository).should(times(2)).existsByMemberIdAndFriendId(anyLong(), anyLong());
+        then(friendRequestRepository).should(times(4)).findBySenderIdAndReceiverId(anyLong(), anyLong());
+        then(pagingUtil).should().getNextKey(any(), any());
     }
 
     @Test
