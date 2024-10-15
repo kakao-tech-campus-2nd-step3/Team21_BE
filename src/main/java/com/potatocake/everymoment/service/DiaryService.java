@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -40,6 +42,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.locationtech.jts.geom.Point;
 
 @RequiredArgsConstructor
 @Transactional
@@ -52,6 +55,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final FileRepository fileRepository;
+    private final GeometryFactory geometryFactory;
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
     public NotificationResponse createDiaryAuto(Long memberId, DiaryAutoCreateRequest diaryAutoCreateRequest) {
@@ -59,9 +63,14 @@ public class DiaryService {
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
+        double longitude = diaryAutoCreateRequest.getLocationPoint().getLongitude();
+        double latitude = diaryAutoCreateRequest.getLocationPoint().getLatitude();
+
+        Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+
         Diary diary = Diary.builder()
                 .member(currentMember)
-                .locationPoint(diaryAutoCreateRequest.getLocationPoint().toString())
+                .locationPoint(point)
                 .locationName(diaryAutoCreateRequest.getLocationName())
                 .address(diaryAutoCreateRequest.getAddress())
                 .build();
@@ -98,10 +107,16 @@ public class DiaryService {
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
+
+        double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
+        double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
+
+        Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+
         Diary diary = Diary.builder()
                 .member(currentMember)
                 .content(diaryManualCreateRequest.getContent())
-                .locationPoint(diaryManualCreateRequest.getLocationPoint().toString())
+                .locationPoint(point)
                 .locationName(diaryManualCreateRequest.getLocationName())
                 .address(diaryManualCreateRequest.getAddress())
                 .emoji(diaryManualCreateRequest.getEmoji())
@@ -190,11 +205,11 @@ public class DiaryService {
     // 내 일기 위치 조회
     public LocationPoint getDiaryLocation(Long memberId, Long diaryId) {
         Diary diary = getExistDiary(memberId, diaryId);
-        List<String> locations = List.of(diary.getLocationPoint().split("/"));
+        Point point = diary.getLocationPoint();
 
         return LocationPoint.builder()
-                .latitude(Double.parseDouble(locations.get(0)))
-                .longitude(Double.parseDouble(locations.get(1)))
+                .latitude(point.getX())
+                .longitude(point.getY())
                 .build();
     }
 
@@ -240,10 +255,17 @@ public class DiaryService {
             }
         }
 
+        if (diaryManualCreateRequest.getLocationPoint() != null) {
+            double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
+            double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
+
+            Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+
+            existingDiary.updateLocationPoint(point);
+        }
+
         //다이어리 업데이트
         existingDiary.updateContent(diaryManualCreateRequest.getContent());
-        existingDiary.updateLocationPoint(diaryManualCreateRequest.getLocationPoint() != null
-                ? diaryManualCreateRequest.getLocationPoint().toString() : null);
         existingDiary.updateLocationName(diaryManualCreateRequest.getLocationName());
         existingDiary.updateAddress(diaryManualCreateRequest.getAddress());
         existingDiary.updateEmoji(diaryManualCreateRequest.getEmoji());

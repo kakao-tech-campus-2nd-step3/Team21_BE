@@ -17,6 +17,9 @@ import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.CommentService;
 import com.potatocake.everymoment.service.DiaryService;
 import com.potatocake.everymoment.service.FriendDiaryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -114,9 +117,13 @@ public class DiaryController {
                 .body(SuccessResponse.ok(response));
     }
 
-    @GetMapping("/location/{diaryId}")
+    @Operation(summary = "특정 일기 위경도 조회", description = "특정 일기에 있는 위경도를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "위경도 조회 성공")
+    @GetMapping("/{diaryId}/location")
     public ResponseEntity<SuccessResponse<LocationPoint>> getLocation(
+            @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
+            @Parameter(description = "조회할 일기 ID", required = true)
             @PathVariable Long diaryId) {
         Long memberId = memberDetails.getId();
 
