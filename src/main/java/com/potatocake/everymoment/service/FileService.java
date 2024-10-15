@@ -46,7 +46,7 @@ public class FileService {
         List<File> fileEntities = new ArrayList<>();
 
         for (FileRequest info : infos) {
-            MultipartFile file = fileMap.get(info.getImageUrl());
+            MultipartFile file = fileMap.get(info.getFilename());
             if (file == null) {
                 throw new GlobalException(ErrorCode.FILE_NOT_FOUND);
             }
