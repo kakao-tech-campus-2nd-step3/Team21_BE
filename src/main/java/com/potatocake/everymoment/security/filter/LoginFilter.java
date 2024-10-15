@@ -33,7 +33,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final MemberRepository memberRepository;
 
-    private boolean postOnly = true;
+    private final boolean postOnly = true;
 
     public LoginFilter(String filterProcessesUrl, ObjectMapper objectMapper, JwtUtil jwtUtil,
                        MemberRepository memberRepository, AuthenticationManager authenticationManager) {

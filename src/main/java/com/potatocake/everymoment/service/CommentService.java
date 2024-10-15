@@ -12,7 +12,6 @@ import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.CommentRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
-import com.potatocake.everymoment.security.MemberDetails;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -5,9 +5,7 @@ import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
-import com.potatocake.everymoment.dto.request.FileRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
-import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiarySimpleResponse;
@@ -26,23 +24,18 @@ import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.repository.NotificationRepository;
-import com.potatocake.everymoment.security.MemberDetails;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.locationtech.jts.geom.Point;
 
 @RequiredArgsConstructor
 @Transactional

@@ -2,7 +2,6 @@ package com.potatocake.everymoment.service;
 
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
-import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.FriendDiarySimpleResponse;
@@ -21,7 +20,6 @@ import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

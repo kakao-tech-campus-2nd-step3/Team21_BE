@@ -5,7 +5,6 @@ import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.CommentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

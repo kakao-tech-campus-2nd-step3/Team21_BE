@@ -1,6 +1,5 @@
 package com.potatocake.everymoment.entity;
 
-import com.potatocake.everymoment.dto.LocationPoint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
