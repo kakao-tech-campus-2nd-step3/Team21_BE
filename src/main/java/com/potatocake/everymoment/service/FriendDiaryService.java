@@ -6,6 +6,7 @@ import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
 import com.potatocake.everymoment.dto.response.FriendDiarySimpleResponse;
+import com.potatocake.everymoment.dto.response.LikeCountResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.DiaryCategory;
@@ -18,6 +19,7 @@ import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
+import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ public class FriendDiaryService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final FileRepository fileRepository;
+    private final LikeRepository likeRepository;
 
     //친구 일기 조회
     public FriendDiariesResponse getFriendDiaries(Long memberId, DiaryFilterRequest diaryFilterRequest) {
@@ -117,7 +120,11 @@ public class FriendDiaryService {
                 .collect(Collectors.toList());
 
         //like 갯수 반환
-        Integer likeCount = 11;
+        Long likeCount = likeRepository.countByDiary(diary);
+
+        LikeCountResponse count = LikeCountResponse.builder()
+                .likeCount(likeCount)
+                .build();
 
         FriendDiaryResponse diaryResponseDTO = FriendDiaryResponse.builder()
                 .id(diary.getId())
@@ -126,7 +133,7 @@ public class FriendDiaryService {
                 .emoji(diary.getEmoji())
                 .file(fileResponseList)
                 .content(diary.getContent())
-                .likeCount(likeCount)
+                .likeCount(count)
                 .createAt(diary.getCreateAt())
                 .build();
 
