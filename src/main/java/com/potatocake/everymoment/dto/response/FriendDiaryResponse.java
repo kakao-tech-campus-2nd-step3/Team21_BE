@@ -16,7 +16,6 @@ public class FriendDiaryResponse {
     private List<CategoryResponse> categories;
     private String locationName;
     private String emoji;
-    private List<FileResponse> file;
     private String content;
     private LikeCountResponse likeCount;
     private LocalDateTime createAt;

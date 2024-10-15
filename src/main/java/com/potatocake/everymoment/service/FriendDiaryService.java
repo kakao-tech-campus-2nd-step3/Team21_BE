@@ -109,16 +109,6 @@ public class FriendDiaryService {
                         .build())
                 .collect(Collectors.toList());
 
-        // 파일 찾음
-        List<File> files = fileRepository.findByDiary(diary);
-        List<FileResponse> fileResponseList = files.stream()
-                .map(file -> FileResponse.builder()
-                        .id(file.getId())
-                        .imageUrl(file.getImageUrl())
-                        .order(file.getOrder())
-                        .build())
-                .collect(Collectors.toList());
-
         //like 갯수 반환
         Long likeCount = likeRepository.countByDiary(diary);
 
@@ -131,7 +121,6 @@ public class FriendDiaryService {
                 .categories(categoryResponseList)
                 .locationName(diary.getLocationName())
                 .emoji(diary.getEmoji())
-                .file(fileResponseList)
                 .content(diary.getContent())
                 .likeCount(count)
                 .createAt(diary.getCreateAt())

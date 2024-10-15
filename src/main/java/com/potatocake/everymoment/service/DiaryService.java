@@ -145,17 +145,6 @@ public class DiaryService {
             diaryCategoryRepository.save(diaryCategory);
 
         }
-        //파일 저장
-        List<FileRequest> fileRequestList = diaryManualCreateRequest.getFile();
-        for (FileRequest fileRequest : fileRequestList) {
-            File file = File.builder()
-                    .diary(savedDiary)
-                    .imageUrl(fileRequest.getImageUrl())
-                    .order(fileRequest.getOrder())
-                    .build();
-
-            fileRepository.save(file);
-        }
     }
 
     // 내 일기 전체 조회 (타임라인)
@@ -239,22 +228,6 @@ public class DiaryService {
             }
         }
 
-        // 파일 업데이트
-        List<FileRequest> fileRequestList = diaryManualCreateRequest.getFile();
-        if (fileRequestList != null && !fileRequestList.isEmpty()) {
-            fileRepository.deleteByDiary(existingDiary);
-
-            for (FileRequest fileRequest : fileRequestList) {
-                File file = File.builder()
-                        .diary(existingDiary)
-                        .imageUrl(fileRequest.getImageUrl())
-                        .order(fileRequest.getOrder())
-                        .build();
-
-                fileRepository.save(file);
-            }
-        }
-
         if (diaryManualCreateRequest.getLocationPoint() != null) {
             double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
             double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
@@ -317,16 +290,6 @@ public class DiaryService {
                         .build())
                 .collect(Collectors.toList());
 
-        // 파일 찾음
-        List<File> files = fileRepository.findByDiary(savedDiary);
-        List<FileResponse> fileResponseList = files.stream()
-                .map(file -> FileResponse.builder()
-                        .id(file.getId())
-                        .imageUrl(file.getImageUrl())
-                        .order(file.getOrder())
-                        .build())
-                .collect(Collectors.toList());
-
         return MyDiaryResponse.builder()
                 .id(savedDiary.getId())
                 .categories(categoryResponseList)
@@ -334,7 +297,6 @@ public class DiaryService {
                 .locationName(savedDiary.getLocationName())
                 .isBookmark(savedDiary.isBookmark())
                 .emoji(savedDiary.getEmoji())
-                .file(fileResponseList)
                 .content(savedDiary.getContent())
                 .createAt(savedDiary.getCreateAt())
                 .build();
