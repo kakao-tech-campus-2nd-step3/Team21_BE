@@ -93,8 +93,8 @@ public class FriendRequestService {
 
     private Friend createFriend(Member member, Member friend) {
         return Friend.builder()
-                .memberId(member)
-                .friendId(friend)
+                .member(member)
+                .friend(friend)
                 .build();
     }
 

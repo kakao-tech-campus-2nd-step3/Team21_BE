@@ -6,14 +6,15 @@ import com.potatocake.everymoment.dto.response.FriendProfileResponse;
 import com.potatocake.everymoment.dto.response.OneFriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
+import com.potatocake.everymoment.entity.File;
 import com.potatocake.everymoment.entity.Friend;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.DiaryRepository;
+import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
-import com.potatocake.everymoment.security.MemberDetails;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,8 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,23 +34,27 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
+    private final FileRepository fileRepository;
 
     //특정 친구 일기 조회
     @Transactional(readOnly = true)
-    public OneFriendDiariesResponse OneFriendDiariesResponse(Long memberid, Long friendId, LocalDate date, int key, int size) {
+    public OneFriendDiariesResponse OneFriendDiariesResponse(Long memberid, Long friendId, LocalDate date, int key,
+                                                             int size) {
         Member currentMember = memberRepository.findById(memberid)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         //친구인지 확인
         Member friend = memberRepository.findById(friendId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-        friendRepository.findByMemberIdAndFriendId(currentMember, friend)
+        friendRepository.findByMemberAndFriend(currentMember, friend)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(key, size);
 
-        Page<Diary> diaries = diaryRepository.findAll(DiarySpecification.filterDiaries(null, null, date, null, null, null)
-                .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), friendId)), pageable);
+        Page<Diary> diaries = diaryRepository.findAll(
+                DiarySpecification.filterDiaries(null, null, null, date, null, null, null)
+                        .and((root, query, builder) -> builder.equal(root.get("member").get("id"), friendId)),
+                pageable);
 
         List<FriendDiarySimpleResponse> diaryList = diaries.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -70,13 +73,13 @@ public class FriendService {
     public FriendListResponse getFriendList(Long memberIdFromController, String nickname, int key, int size) {
         Member currentMember = memberRepository.findById(memberIdFromController)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-  
+
         Long memberId = currentMember.getId();
 
         Pageable pageable = PageRequest.of(key, size);
 
         Specification<Friend> spec = FriendSpecification.filterFriends(memberId, nickname)
-                .and((root, query, builder) -> builder.equal(root.get("memberId").get("id"), memberId));
+                .and((root, query, builder) -> builder.equal(root.get("member").get("id"), memberId));
 
         Page<Friend> friends = friendRepository.findAll(spec, pageable);
 
@@ -99,9 +102,9 @@ public class FriendService {
         Member friendMember = memberRepository.findById(firendId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Friend friendMine = friendRepository.findByMemberIdAndFriendId(currentMember, friendMember)
+        Friend friendMine = friendRepository.findByMemberAndFriend(currentMember, friendMember)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
-        Friend friendFriends = friendRepository.findByMemberIdAndFriendId(friendMember, currentMember)
+        Friend friendFriends = friendRepository.findByMemberAndFriend(friendMember, currentMember)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 
         friendRepository.delete(friendMine);
@@ -115,7 +118,7 @@ public class FriendService {
         Member friendMember = memberRepository.findById(friendId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Friend friend = friendRepository.findByMemberIdAndFriendId(currentMember, friendMember)
+        Friend friend = friendRepository.findByMemberAndFriend(currentMember, friendMember)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 
         friend.toggleIsClose();
@@ -124,10 +127,14 @@ public class FriendService {
     //다이어리 DTO 변환
     private FriendDiarySimpleResponse convertToFriendDiariesResponseDTO(Diary savedDiary) {
         //파일 찾음
-        ThumbnailResponse thumbnailResponse = ThumbnailResponse.builder()
-                .id(1L)
-                .imageUrl("image1.url")
-                .build();
+        File thumbnailFile = fileRepository.findByDiaryAndOrder(savedDiary, 1);
+        ThumbnailResponse thumbnailResponse = null;
+        if (thumbnailFile != null) {
+            thumbnailResponse = ThumbnailResponse.builder()
+                    .id(thumbnailFile.getId())
+                    .imageUrl(thumbnailFile.getImageUrl())
+                    .build();
+        }
 
         return FriendDiarySimpleResponse.builder()
                 .id(savedDiary.getId())
@@ -144,7 +151,7 @@ public class FriendService {
 
     //친구 프로필 DTO 변환
     private FriendProfileResponse convertToFriendProfileResponseDTO(Friend friend) {
-        Member friendMember = friend.getFriendId();
+        Member friendMember = friend.getFriend();
         return FriendProfileResponse.builder()
                 .id(friendMember.getId())
                 .nickname(friendMember.getNickname())

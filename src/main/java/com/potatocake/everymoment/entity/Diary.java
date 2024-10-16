@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,9 +33,8 @@ public class Diary extends BaseTimeEntity {
     @Lob
     private String content;
 
-    //point는 mysql연결 뒤에
-    @Column(length = 250, nullable = false)
-    private String locationPoint;  // Java에서는 문자열로 처리
+    @Column(nullable = false)
+    private Point locationPoint;
 
     @Column(length = 50, nullable = false)
     private String locationName;
@@ -59,7 +59,7 @@ public class Diary extends BaseTimeEntity {
         }
     }
 
-    public void updateLocationPoint(String locationPoint) {
+    public void updateLocationPoint(Point locationPoint) {
         if (locationPoint != null) {
             this.locationPoint = locationPoint;
         }

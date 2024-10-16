@@ -2,12 +2,16 @@ package com.potatocake.everymoment.service;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+import com.potatocake.everymoment.dto.response.FriendRequestStatus;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
-import com.potatocake.everymoment.dto.response.MemberResponse;
+import com.potatocake.everymoment.dto.response.MemberMyResponse;
 import com.potatocake.everymoment.dto.response.MemberSearchResponse;
+import com.potatocake.everymoment.dto.response.MemberSearchResultResponse;
 import com.potatocake.everymoment.entity.Member;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
+import com.potatocake.everymoment.repository.FriendRepository;
+import com.potatocake.everymoment.repository.FriendRequestRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import com.potatocake.everymoment.util.S3FileUploader;
@@ -27,13 +31,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final FriendRequestRepository friendRequestRepository;
+    private final FriendRepository friendRepository;
     private final PagingUtil pagingUtil;
     private final S3FileUploader s3FileUploader;
 
     @Transactional(readOnly = true)
-    public MemberSearchResponse searchMembers(String nickname, Long key, int size) {
+    public MemberSearchResponse searchMembers(String nickname, Long key, int size, Long currentMemberId) {
         Window<Member> window = fetchMemberWindow(nickname, key, size);
-        List<MemberResponse> members = convertToMemberResponses(window.getContent());
+        List<MemberSearchResultResponse> members = convertToMemberResponses(window.getContent(), currentMemberId);
         Long nextKey = pagingUtil.getNextKey(window, Member::getId);
 
         return MemberSearchResponse.builder()
@@ -55,11 +61,11 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public MemberResponse getMemberInfo(Long memberId) {
+    public MemberMyResponse getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        return MemberResponse.builder()
+        return MemberMyResponse.builder()
                 .id(member.getId())
                 .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname())
@@ -70,7 +76,10 @@ public class MemberService {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        String profileImageUrl = s3FileUploader.uploadFile(profileImage);
+        String profileImageUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            profileImageUrl = s3FileUploader.uploadFile(profileImage);
+        }
 
         member.update(nickname, profileImageUrl);
     }
@@ -78,7 +87,7 @@ public class MemberService {
     public void deleteMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-        
+
         memberRepository.delete(member);
     }
 
@@ -91,14 +100,33 @@ public class MemberService {
         return memberRepository.findByNicknameContaining(searchNickname, scrollPosition, pageable);
     }
 
-    private List<MemberResponse> convertToMemberResponses(List<Member> members) {
+    private List<MemberSearchResultResponse> convertToMemberResponses(List<Member> members, Long currentMemberId) {
         return members.stream()
-                .map(member -> MemberResponse.builder()
+                .map(member -> MemberSearchResultResponse.builder()
                         .id(member.getId())
                         .profileImageUrl(member.getProfileImageUrl())
                         .nickname(member.getNickname())
+                        .friendRequestStatus(getFriendRequestStatus(currentMemberId, member.getId()))
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    private FriendRequestStatus getFriendRequestStatus(Long currentMemberId, Long targetMemberId) {
+        if (currentMemberId.equals(targetMemberId)) {
+            return FriendRequestStatus.SELF;
+        }
+
+        if (friendRepository.existsByMemberIdAndFriendId(currentMemberId, targetMemberId)) {
+            return FriendRequestStatus.FRIEND;
+        }
+
+        return friendRequestRepository.findBySenderIdAndReceiverId(currentMemberId, targetMemberId)
+                .map(request -> FriendRequestStatus.SENT)
+                .orElseGet(() ->
+                        friendRequestRepository.findBySenderIdAndReceiverId(targetMemberId, currentMemberId)
+                                .map(request -> FriendRequestStatus.RECEIVED)
+                                .orElse(FriendRequestStatus.NONE)
+                );
     }
 
 }

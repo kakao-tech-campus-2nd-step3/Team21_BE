@@ -25,6 +25,9 @@ jobs:
         with:
           files: ./src/main/resources/application-prod.yml
         env:
+          spring.datasource.url: ${{ secrets.RDS_URL }}
+          spring.datasource.username: ${{ secrets.RDS_USERNAME }}
+          spring.datasource.password: ${{ secrets.RDS_PASSWORD }}
           aws.s3.bucket: ${{ secrets.AWS_S3_BUCKET }}
           aws.s3.accessKey: ${{ secrets.AWS_S3_ACCESS_KEY }}
           aws.s3.secretKey: ${{ secrets.AWS_S3_SECRET_KEY }}
@@ -56,4 +59,4 @@ jobs:
           script: |
             cd ./project
             sudo fuser -k -n tcp 8080 || true
-            nohup java -jar app.jar > ./output.log 2>&1 &
+            nohup java -Duser.timezone=Asia/Seoul -jar app.jar > ./output.log 2>&1 &

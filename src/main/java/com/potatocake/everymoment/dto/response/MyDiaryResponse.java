@@ -14,7 +14,6 @@ public class MyDiaryResponse {
     private String locationName;
     private boolean isBookmark;
     private String emoji;
-    private List<FileResponse> file;
     private String content;
     private LocalDateTime createAt;
 }

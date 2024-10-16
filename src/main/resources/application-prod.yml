@@ -1,14 +1,16 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
+    url: ${RDS_URL}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
 
   jpa:
     properties:
       hibernate:
-        format_sql: true
-    show-sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+    hibernate:
+      ddl-auto: update
 
   h2:
     console:

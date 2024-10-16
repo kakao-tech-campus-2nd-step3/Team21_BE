@@ -14,10 +14,10 @@ public class FriendSpecification {
         return (Root<Friend> root, CriteriaQuery<?> query, CriteriaBuilder builder) -> {
             Predicate predicate = builder.conjunction();
 
-            predicate = builder.and(predicate, builder.equal(root.get("memberId").get("id"), memberId));
+            predicate = builder.and(predicate, builder.equal(root.get("member").get("id"), memberId));
 
             if (nickname != null) {
-                Join<Friend, Member> friendJoin = root.join("friendId");
+                Join<Friend, Member> friendJoin = root.join("friend");
                 predicate = builder.and(predicate, builder.like(friendJoin.get("nickname"), "%" + nickname + "%"));
             }
 
