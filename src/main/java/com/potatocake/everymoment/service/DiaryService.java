@@ -100,7 +100,6 @@ public class DiaryService {
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-
         double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
         double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
 
@@ -149,21 +148,21 @@ public class DiaryService {
 
         Page<Diary> diaryPage;
 
-        List<Long> categoryIds = diaryFilterRequest.getCategories();
+        List<String> categories = diaryFilterRequest.getCategories();
         List<String> emojis = diaryFilterRequest.getEmojis();
 
         Specification<Diary> spec = DiarySpecification.filterDiaries(
                         diaryFilterRequest.getKeyword(),
                         emojis,
-                        categoryIds,
+                        categories,
                         diaryFilterRequest.getDate(),
                         diaryFilterRequest.getFrom(),
                         diaryFilterRequest.getUntil(),
                         diaryFilterRequest.getIsBookmark())
                 .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
-        diaryPage = diaryRepository.findAll(spec, PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-
+        diaryPage = diaryRepository.findAll(spec,
+                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
 
         List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
                 .map(this::convertToMyDiarySimpleResponseDto)
