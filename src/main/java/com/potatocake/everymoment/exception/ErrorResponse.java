@@ -11,9 +11,9 @@ import lombok.Getter;
 @JsonInclude(Include.NON_NULL)
 public class ErrorResponse {
 
-    private int code;
-    private String message;
-    private Map<String, String> validation;
+    private final int code;
+    private final String message;
+    private final Map<String, String> validation;
 
     @Builder
     public ErrorResponse(int code, String message) {
