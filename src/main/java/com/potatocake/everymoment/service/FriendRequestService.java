@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.service;
 
+import static java.util.function.Function.identity;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 import com.potatocake.everymoment.dto.response.FriendRequestPageRequest;
@@ -14,6 +15,9 @@ import com.potatocake.everymoment.repository.FriendRequestRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
@@ -106,11 +110,27 @@ public class FriendRequestService {
     }
 
     private List<FriendRequestResponse> convertToFriendRequestResponses(List<FriendRequest> requests) {
+        Set<Long> senderIds = requests.stream()
+                .map(request -> request.getSender().getId())
+                .collect(Collectors.toSet());
+
+        Map<Long, Member> senderMap = memberRepository.findAllById(senderIds)
+                .stream()
+                .collect(Collectors.toMap(Member::getId, identity()));
+
         return requests.stream()
-                .map(request -> FriendRequestResponse.builder()
-                        .id(request.getId())
-                        .senderId(request.getSender().getId())
-                        .build())
+                .map(request -> {
+                    Member sender = senderMap.get(request.getSender().getId());
+                    if (sender == null) {
+                        throw new GlobalException(ErrorCode.MEMBER_NOT_FOUND);
+                    }
+                    return FriendRequestResponse.builder()
+                            .id(request.getId())
+                            .senderId(sender.getId())
+                            .nickname(sender.getNickname())
+                            .profileImageUrl(sender.getProfileImageUrl())
+                            .build();
+                })
                 .toList();
     }
 

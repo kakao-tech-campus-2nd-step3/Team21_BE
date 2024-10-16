@@ -13,7 +13,5 @@ public class DiaryManualCreateRequest {
     private boolean isBookmark;
     private boolean isPublic;
     private String emoji;
-    private List<FileRequest> file;
     private String content;
 }
-
