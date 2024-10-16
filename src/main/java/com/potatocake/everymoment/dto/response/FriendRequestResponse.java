@@ -9,5 +9,7 @@ public class FriendRequestResponse {
 
     private Long id;
     private Long senderId;
+    private String nickname;
+    private String profileImageUrl;
 
 }
