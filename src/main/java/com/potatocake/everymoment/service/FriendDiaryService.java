@@ -47,7 +47,7 @@ public class FriendDiaryService {
 
         List<Friend> friends = friendRepository.findFriendsByMember(currentMember);
         List<Long> friendIdList = friends.stream()
-                .map(Friend::getId)
+                .map(friend -> friend.getFriend().getId())
                 .collect(Collectors.toList());
 
         Page<Diary> diaryPage;
@@ -64,7 +64,7 @@ public class FriendDiaryService {
                         diaryFilterRequest.getFrom(),
                         diaryFilterRequest.getUntil(),
                         diaryFilterRequest.getIsBookmark())
-                .and((root, query, builder) -> root.get("member").in(friendIdList));
+                .and((root, query, builder) -> root.get("member").get("id").in(friendIdList));
 
         diaryPage = diaryRepository.findAll(spec,
                 PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
@@ -92,10 +92,10 @@ public class FriendDiaryService {
 
         List<Friend> friends = friendRepository.findFriendsByMember(currentMember);
         List<Long> friendIdList = friends.stream()
-                .map(Friend::getId)
+                .map(friend -> friend.getFriend().getId())
                 .collect(Collectors.toList());
 
-        if (!friendIdList.contains(diary.getMember())) {
+        if (!friendIdList.contains(diary.getMember().getId())) {
             throw new GlobalException(ErrorCode.FRIEND_NOT_FOUND);
         }
 
@@ -151,4 +151,5 @@ public class FriendDiaryService {
                 .createAt(savedDiary.getCreateAt())
                 .build();
     }
+    
 }
