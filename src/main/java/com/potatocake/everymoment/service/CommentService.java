@@ -58,6 +58,10 @@ public class CommentService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
+        if (!diary.isPublic()) {
+            throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
+        }
+
         Comment comment = Comment.builder()
                 .content(commentRequest.getContent())
                 .member(currentMember)
