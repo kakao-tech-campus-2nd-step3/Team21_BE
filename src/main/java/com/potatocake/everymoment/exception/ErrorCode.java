@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     /* Diary */
+    DIARY_NOT_PUBLIC("비공개 일기입니다.", HttpStatus.FORBIDDEN),
     DIARY_NOT_FOUND("존재하지 않는 일기입니다.", NOT_FOUND),
 
     /* Member */

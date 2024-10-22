@@ -40,6 +40,11 @@ public class LikeService {
     public void toggleLike(Long memberId, Long diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!diary.isPublic()) {
+            throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
+        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
