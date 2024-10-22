@@ -12,9 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("dev")
 class PagingUtilTest {
 
     private PagingUtil pagingUtil;
