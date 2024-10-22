@@ -1,6 +1,7 @@
 package com.potatocake.everymoment.service;
 
 import com.potatocake.everymoment.dto.request.CommentRequest;
+import com.potatocake.everymoment.dto.request.FcmNotificationRequest;
 import com.potatocake.everymoment.dto.response.CommentFriendResponse;
 import com.potatocake.everymoment.dto.response.CommentResponse;
 import com.potatocake.everymoment.dto.response.CommentsResponse;
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final FcmService fcmService;
 
     // 댓글 목록 조회
     public CommentsResponse getComments(Long diaryId, int key, int size) {
@@ -63,6 +65,16 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+
+        // 다이어리 작성자에게 FCM 알림 전송 (자신의 댓글에는 알림 안보냄)
+        if (!diary.getMember().getId().equals(memberId)) {
+            fcmService.sendNotification(diary.getMember().getId(), FcmNotificationRequest.builder()
+                    .title("새로운 댓글")
+                    .body(currentMember.getNickname() + "님이 회원님의 일기에 댓글을 남겼습니다.")
+                    .type("COMMENT")
+                    .targetId(diary.getId())
+                    .build());
+        }
     }
 
     // 댓글 수정
@@ -85,7 +97,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!Objects.equals(currentMember.getId(), comment.getMember().getId())){
+        if (!Objects.equals(currentMember.getId(), comment.getMember().getId())) {
             throw new GlobalException(ErrorCode.COMMENT_NOT_FOUND);
         }
 
@@ -93,7 +105,7 @@ public class CommentService {
     }
 
     // 친구 프로필 DTO 변환
-    private CommentFriendResponse convertToCommentFriendResponseDTO(Member member){
+    private CommentFriendResponse convertToCommentFriendResponseDTO(Member member) {
         return CommentFriendResponse.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
@@ -102,7 +114,7 @@ public class CommentService {
     }
 
     // 댓글 DTO 변환
-    private CommentResponse convertToCommentResponseDTO(Comment comment){
+    private CommentResponse convertToCommentResponseDTO(Comment comment) {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .commentFriendResponse(convertToCommentFriendResponseDTO(comment.getMember()))
@@ -110,5 +122,5 @@ public class CommentService {
                 .createdAt(comment.getCreateAt())
                 .build();
     }
-}
 
+}
