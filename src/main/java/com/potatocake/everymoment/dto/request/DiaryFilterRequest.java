@@ -27,10 +27,11 @@ public class DiaryFilterRequest {
                 : Collections.emptyList();
     }
 
-    public List<Long> getCategories() {
+    public List<String> getCategories() {
         return (category != null && !category.isEmpty())
                 ? Arrays.stream(category.split(","))
-                .map(Long::parseLong)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList())
                 : Collections.emptyList();
     }

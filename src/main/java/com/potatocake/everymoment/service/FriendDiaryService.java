@@ -53,20 +53,21 @@ public class FriendDiaryService {
         Page<Diary> diaryPage;
 
         // 카테고리와 이모지가 여러 개 전달될 수 있으므로 이를 리스트로 변환
-        List<Long> categoryIds = diaryFilterRequest.getCategories();
+        List<String> categories = diaryFilterRequest.getCategories();
         List<String> emojis = diaryFilterRequest.getEmojis();
 
         Specification<Diary> spec = DiarySpecification.filterDiaries(
                         diaryFilterRequest.getKeyword(),
                         emojis,
-                        categoryIds,
+                        categories,
                         diaryFilterRequest.getDate(),
                         diaryFilterRequest.getFrom(),
                         diaryFilterRequest.getUntil(),
                         diaryFilterRequest.getIsBookmark())
                 .and((root, query, builder) -> root.get("member").in(friendIdList));
 
-        diaryPage = diaryRepository.findAll(spec, PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
+        diaryPage = diaryRepository.findAll(spec,
+                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
 
         List<FriendDiarySimpleResponse> friendDiarySimpleResponseList = diaryPage.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)

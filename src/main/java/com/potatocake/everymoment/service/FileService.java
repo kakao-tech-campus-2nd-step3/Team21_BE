@@ -1,6 +1,5 @@
 package com.potatocake.everymoment.service;
 
-import com.potatocake.everymoment.dto.request.FileRequest;
 import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.File;
@@ -11,8 +10,6 @@ import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.util.S3FileUploader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,29 +31,23 @@ public class FileService {
                 .toList();
     }
 
-    public void uploadFiles(Long diaryId, Long memberId, List<MultipartFile> files, List<FileRequest> infos) {
+    public void uploadFiles(Long diaryId, Long memberId, List<MultipartFile> files) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
         diary.checkOwner(memberId);
 
-        Map<String, MultipartFile> fileMap = files.stream()
-                .collect(Collectors.toMap(MultipartFile::getOriginalFilename, f -> f, (f1, f2) -> f1));
-
         List<File> fileEntities = new ArrayList<>();
 
-        for (FileRequest info : infos) {
-            MultipartFile file = fileMap.get(info.getFilename());
-            if (file == null) {
-                throw new GlobalException(ErrorCode.FILE_NOT_FOUND);
-            }
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
 
             String url = uploader.uploadFile(file);
 
             File fileEntity = File.builder()
                     .diary(diary)
                     .imageUrl(url)
-                    .order(info.getOrder())
+                    .order(i + 1)
                     .build();
 
             fileEntities.add(fileEntity);
@@ -65,7 +56,7 @@ public class FileService {
         fileRepository.saveAll(fileEntities);
     }
 
-    public void updateFiles(Long diaryId, Long memberId, List<MultipartFile> files, List<FileRequest> infos) {
+    public void updateFiles(Long diaryId, Long memberId, List<MultipartFile> files) {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
@@ -73,7 +64,7 @@ public class FileService {
 
         fileRepository.deleteByDiary(diary);
 
-        uploadFiles(diaryId, memberId, files, infos);
+        uploadFiles(diaryId, memberId, files);
     }
 
 }
