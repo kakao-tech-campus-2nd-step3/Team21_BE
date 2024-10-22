@@ -17,6 +17,7 @@ import com.potatocake.everymoment.repository.MemberRepository;
 import com.potatocake.everymoment.util.PagingUtil;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -50,9 +51,13 @@ public class FriendRequestService {
     }
 
     public void sendFriendRequest(Long senderId, Long receiverId) {
-        boolean isAlreadySend = friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId);
+        // 이미 친구인 경우 체크
+        if (friendRepository.existsByMemberIdAndFriendId(senderId, receiverId)) {
+            throw new GlobalException(ErrorCode.ALREADY_FRIEND);
+        }
 
-        if (isAlreadySend) {
+        // 이미 친구 요청을 보낸 경우 체크
+        if (friendRequestRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {
             throw new GlobalException(ErrorCode.FRIEND_REQUEST_ALREADY_EXISTS);
         }
 
@@ -61,18 +66,37 @@ public class FriendRequestService {
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.builder()
-                .sender(sender)
-                .receiver(receiver)
-                .build());
+        // 상대방이 나에게 보낸 친구 요청이 있는지 확인
+        Optional<FriendRequest> oppositeRequest = friendRequestRepository
+                .findBySenderIdAndReceiverId(receiverId, senderId);
 
-        // 알림 발송
-        fcmService.sendNotification(receiverId, FcmNotificationRequest.builder()
-                .title("새로운 친구 요청")
-                .body(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
-                .type("FRIEND_REQUEST")
-                .targetId(friendRequest.getId())
-                .build());
+        if (oppositeRequest.isPresent()) {
+            // 상대방이 이미 나에게 친구 요청을 보낸 상태라면 자동으로 수락 처리
+            createFriendRelationship(receiver, sender);
+            friendRequestRepository.delete(oppositeRequest.get());
+
+            // 상대방에게 친구 수락 알림 발송
+            fcmService.sendNotification(receiverId, FcmNotificationRequest.builder()
+                    .title("친구 요청 수락")
+                    .body(sender.getNickname() + "님이 친구 요청을 수락했습니다.")
+                    .type("FRIEND_ACCEPT")
+                    .targetId(sender.getId())
+                    .build());
+        } else {
+            // 상대방이 보낸 요청이 없다면 새로운 친구 요청 생성
+            FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.builder()
+                    .sender(sender)
+                    .receiver(receiver)
+                    .build());
+
+            // 상대방에게 친구 요청 알림 발송
+            fcmService.sendNotification(receiverId, FcmNotificationRequest.builder()
+                    .title("새로운 친구 요청")
+                    .body(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
+                    .type("FRIEND_REQUEST")
+                    .targetId(friendRequest.getId())
+                    .build());
+        }
     }
 
     public void acceptFriendRequest(Long requestId, Long memberId) {
@@ -99,6 +123,21 @@ public class FriendRequestService {
         FriendRequest friendRequest = findAndValidateFriendRequest(requestId, memberId);
 
         friendRequestRepository.delete(friendRequest);
+    }
+
+    private void createFriendRelationship(Member member1, Member member2) {
+        Friend friend1 = Friend.builder()
+                .member(member1)
+                .friend(member2)
+                .build();
+
+        Friend friend2 = Friend.builder()
+                .member(member2)
+                .friend(member1)
+                .build();
+
+        friendRepository.save(friend1);
+        friendRepository.save(friend2);
     }
 
     private FriendRequest findAndValidateFriendRequest(Long requestId, Long memberId) {

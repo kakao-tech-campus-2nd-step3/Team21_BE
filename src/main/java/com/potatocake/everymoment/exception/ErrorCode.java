@@ -64,7 +64,10 @@ public enum ErrorCode {
 
     /* FCM */
     FCM_TOKEN_NOT_FOUND("FCM 토큰이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    FCM_MESSAGE_SEND_FAILED("FCM 메시지 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    FCM_MESSAGE_SEND_FAILED("FCM 메시지 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    /* Friend */
+    ALREADY_FRIEND("이미 친구 관계입니다.", HttpStatus.CONFLICT);
 
     private final String message;
     private final HttpStatus status;
