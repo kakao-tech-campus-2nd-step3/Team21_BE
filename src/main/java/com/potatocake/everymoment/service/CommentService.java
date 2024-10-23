@@ -1,7 +1,7 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.constant.NotificationType;
 import com.potatocake.everymoment.dto.request.CommentRequest;
-import com.potatocake.everymoment.dto.request.FcmNotificationRequest;
 import com.potatocake.everymoment.dto.response.CommentFriendResponse;
 import com.potatocake.everymoment.dto.response.CommentResponse;
 import com.potatocake.everymoment.dto.response.CommentsResponse;
@@ -31,7 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
-    private final FcmService fcmService;
+    private final NotificationService notificationService;
 
     // 댓글 목록 조회
     public CommentsResponse getComments(Long diaryId, int key, int size) {
@@ -52,7 +52,7 @@ public class CommentService {
 
     // 댓글 작성
     public void createComment(Long memberId, Long diaryId, CommentRequest commentRequest) {
-        Member currentMember = memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(diaryId)
@@ -64,20 +64,20 @@ public class CommentService {
 
         Comment comment = Comment.builder()
                 .content(commentRequest.getContent())
-                .member(currentMember)
+                .member(member)
                 .diary(diary)
                 .build();
 
         commentRepository.save(comment);
 
-        // 다이어리 작성자에게 FCM 알림 전송 (자신의 댓글에는 알림 안보냄)
+        // 자신의 게시글이 아닐 경우에만 알림 발송
         if (!diary.getMember().getId().equals(memberId)) {
-            fcmService.sendNotification(diary.getMember().getId(), FcmNotificationRequest.builder()
-                    .title("새로운 댓글")
-                    .body(currentMember.getNickname() + "님이 회원님의 일기에 댓글을 남겼습니다.")
-                    .type("COMMENT")
-                    .targetId(diary.getId())
-                    .build());
+            notificationService.createAndSendNotification(
+                    diary.getMember().getId(),
+                    NotificationType.COMMENT,
+                    diaryId,
+                    member.getNickname()
+            );
         }
     }
 
