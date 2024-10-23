@@ -3,7 +3,7 @@ package com.potatocake.everymoment.service;
 import static java.util.function.Function.identity;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-import com.potatocake.everymoment.dto.request.FcmNotificationRequest;
+import com.potatocake.everymoment.constant.NotificationType;
 import com.potatocake.everymoment.dto.response.FriendRequestPageRequest;
 import com.potatocake.everymoment.dto.response.FriendRequestResponse;
 import com.potatocake.everymoment.entity.Friend;
@@ -36,7 +36,7 @@ public class FriendRequestService {
     private final MemberRepository memberRepository;
     private final FriendRepository friendRepository;
     private final PagingUtil pagingUtil;
-    private final FcmService fcmService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public FriendRequestPageRequest getFriendRequests(Long key, int size, Long memberId) {
@@ -76,12 +76,12 @@ public class FriendRequestService {
             friendRequestRepository.delete(oppositeRequest.get());
 
             // 상대방에게 친구 수락 알림 발송
-            fcmService.sendNotification(receiverId, FcmNotificationRequest.builder()
-                    .title("친구 요청 수락")
-                    .body(sender.getNickname() + "님이 친구 요청을 수락했습니다.")
-                    .type("FRIEND_ACCEPT")
-                    .targetId(sender.getId())
-                    .build());
+            notificationService.createAndSendNotification(
+                    receiverId,
+                    NotificationType.FRIEND_ACCEPT,
+                    sender.getId(),
+                    sender.getNickname()
+            );
         } else {
             // 상대방이 보낸 요청이 없다면 새로운 친구 요청 생성
             FriendRequest friendRequest = friendRequestRepository.save(FriendRequest.builder()
@@ -90,12 +90,12 @@ public class FriendRequestService {
                     .build());
 
             // 상대방에게 친구 요청 알림 발송
-            fcmService.sendNotification(receiverId, FcmNotificationRequest.builder()
-                    .title("새로운 친구 요청")
-                    .body(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
-                    .type("FRIEND_REQUEST")
-                    .targetId(friendRequest.getId())
-                    .build());
+            notificationService.createAndSendNotification(
+                    receiverId,
+                    NotificationType.FRIEND_REQUEST,
+                    friendRequest.getId(),
+                    sender.getNickname()
+            );
         }
     }
 
@@ -111,12 +111,12 @@ public class FriendRequestService {
         friendRequestRepository.delete(friendRequest);
 
         // 알림 발송
-        fcmService.sendNotification(friendRequest.getSender().getId(), FcmNotificationRequest.builder()
-                .title("친구 요청 수락")
-                .body(friendRequest.getReceiver().getNickname() + "님이 친구 요청을 수락했습니다.")
-                .type("FRIEND_ACCEPT")
-                .targetId(friendRequest.getReceiver().getId())
-                .build());
+        notificationService.createAndSendNotification(
+                friendRequest.getSender().getId(),
+                NotificationType.FRIEND_ACCEPT,
+                friendRequest.getReceiver().getId(),
+                friendRequest.getReceiver().getNickname()
+        );
     }
 
     public void rejectFriendRequest(Long requestId, Long memberId) {

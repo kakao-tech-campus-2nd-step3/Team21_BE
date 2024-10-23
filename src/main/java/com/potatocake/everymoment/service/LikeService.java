@@ -1,6 +1,6 @@
 package com.potatocake.everymoment.service;
 
-import com.potatocake.everymoment.dto.request.FcmNotificationRequest;
+import com.potatocake.everymoment.constant.NotificationType;
 import com.potatocake.everymoment.dto.response.LikeCountResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.Like;
@@ -23,7 +23,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
-    private final FcmService fcmService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public LikeCountResponse getLikeCount(Long diaryId) {
@@ -63,14 +63,11 @@ public class LikeService {
             likeRepository.save(likeEntity);
 
             if (!diary.getMember().getId().equals(memberId)) {
-                // 좋아요를 눌렀을 때만 (취소 제외), 그리고 자신의 게시물이 아닐 때만 알림 발송
-                fcmService.sendNotification(diary.getMember().getId(),
-                        FcmNotificationRequest.builder()
-                                .title("새로운 좋아요")
-                                .body(member.getNickname() + "님이 회원님의 일기를 좋아합니다.")
-                                .type("LIKE")
-                                .targetId(diary.getId())
-                                .build()
+                notificationService.createAndSendNotification(
+                        diary.getMember().getId(),
+                        NotificationType.LIKE,
+                        diaryId,
+                        member.getNickname()
                 );
             }
         }

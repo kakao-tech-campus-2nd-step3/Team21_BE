@@ -36,7 +36,8 @@ public class FcmService {
         List<DeviceToken> deviceTokens = deviceTokenRepository.findAllByMemberId(targetMemberId);
 
         if (deviceTokens.isEmpty()) {
-            throw new GlobalException(ErrorCode.FCM_TOKEN_NOT_FOUND);
+            log.warn("FCM 토큰이 존재하지 않는 사용자입니다. memberId: {}", targetMemberId);
+            return;
         }
 
         List<Message> messages = deviceTokens.stream()
@@ -55,8 +56,7 @@ public class FcmService {
             BatchResponse response = firebaseMessaging.sendEach(messages);
             handleBatchResponse(response, deviceTokens);
         } catch (FirebaseMessagingException e) {
-            log.error("FCM 메시지 전송 실패 : {}", e.getMessage(), e);
-            throw new GlobalException(ErrorCode.FCM_MESSAGE_SEND_FAILED);
+            log.error("FCM 메시지 전송 실패. targetMemberId: {}, error: {}", targetMemberId, e.getMessage());
         }
     }
 
@@ -83,13 +83,9 @@ public class FcmService {
         }
 
         if (!tokensToDelete.isEmpty()) {
-            log.info("유효하지 않은 FCM 토큰 {} 개를 삭제합니다", tokensToDelete.size());
             deviceTokenRepository.deleteAll(tokensToDelete);
+            log.info("유효하지 않은 FCM 토큰 {} 개를 삭제했습니다", tokensToDelete.size());
         }
-
-        log.info("FCM 일괄 전송 결과 - 성공: {}, 실패: {}",
-                response.getSuccessCount(),
-                response.getFailureCount());
     }
 
     private boolean shouldDeleteToken(MessagingErrorCode errorCode) {

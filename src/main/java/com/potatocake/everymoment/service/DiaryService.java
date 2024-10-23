@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.constant.NotificationType;
 import com.potatocake.everymoment.dto.LocationPoint;
 import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
@@ -9,13 +10,11 @@ import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
 import com.potatocake.everymoment.dto.response.MyDiarySimpleResponse;
-import com.potatocake.everymoment.dto.response.NotificationResponse;
 import com.potatocake.everymoment.dto.response.ThumbnailResponse;
 import com.potatocake.everymoment.entity.Diary;
 import com.potatocake.everymoment.entity.DiaryCategory;
 import com.potatocake.everymoment.entity.File;
 import com.potatocake.everymoment.entity.Member;
-import com.potatocake.everymoment.entity.Notification;
 import com.potatocake.everymoment.exception.ErrorCode;
 import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.CategoryRepository;
@@ -23,7 +22,6 @@ import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
-import com.potatocake.everymoment.repository.NotificationRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -44,14 +42,14 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final DiaryCategoryRepository diaryCategoryRepository;
-    private final NotificationRepository notificationRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final FileRepository fileRepository;
     private final GeometryFactory geometryFactory;
+    private final NotificationService notificationService;
 
     // 자동 일기 저장 (LocationPoint, Name, Adress 만 저장)
-    public NotificationResponse createDiaryAuto(Long memberId, DiaryAutoCreateRequest diaryAutoCreateRequest) {
+    public void createDiaryAuto(Long memberId, DiaryAutoCreateRequest diaryAutoCreateRequest) {
         // member 가져옴
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
@@ -70,28 +68,12 @@ public class DiaryService {
 
         Diary savedDiary = diaryRepository.save(diary);
 
-        //알람 만듦
-        String content = "현재 " + savedDiary.getLocationName() + "에 머무르고 있어요! 지금 기분은 어떠신가요?";
-
-        Notification notification = Notification.builder()
-                .member(currentMember)
-                .content(content)
-                .type("MOOD_CHECK")
-                .targetId(savedDiary.getId())
-                .build();
-
-        //알람 저장
-        Notification savedNotification = notificationRepository.save(notification);
-
-        //알람 DTO
-        NotificationResponse notificationResponse = NotificationResponse.builder()
-                .content(savedNotification.getContent())
-                .type(savedNotification.getType())
-                .targetId(savedNotification.getTargetId())
-                .createAt(savedNotification.getCreateAt())
-                .build();
-
-        return notificationResponse;
+        notificationService.createAndSendNotification(
+                memberId,
+                NotificationType.AUTO_DIARY,
+                savedDiary.getId(),
+                savedDiary.getLocationName()
+        );
     }
 
     // 수동 일기 작성
