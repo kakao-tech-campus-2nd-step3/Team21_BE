@@ -70,7 +70,7 @@ public class DiaryService {
 
         notificationService.createAndSendNotification(
                 memberId,
-                NotificationType.AUTO_DIARY,
+                NotificationType.MOOD_CHECK,
                 savedDiary.getId(),
                 savedDiary.getLocationName()
         );
