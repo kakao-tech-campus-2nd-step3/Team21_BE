@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.service;
 
+import com.potatocake.everymoment.constant.NotificationType;
 import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.dto.response.CommentFriendResponse;
 import com.potatocake.everymoment.dto.response.CommentResponse;
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
 
     // 댓글 목록 조회
     public CommentsResponse getComments(Long diaryId, int key, int size) {
@@ -50,19 +52,33 @@ public class CommentService {
 
     // 댓글 작성
     public void createComment(Long memberId, Long diaryId, CommentRequest commentRequest) {
-        Member currentMember = memberRepository.findById(memberId)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
+        if (!diary.isPublic()) {
+            throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
+        }
+
         Comment comment = Comment.builder()
                 .content(commentRequest.getContent())
-                .member(currentMember)
+                .member(member)
                 .diary(diary)
                 .build();
 
         commentRepository.save(comment);
+
+        // 자신의 게시글이 아닐 경우에만 알림 발송
+        if (!diary.getMember().getId().equals(memberId)) {
+            notificationService.createAndSendNotification(
+                    diary.getMember().getId(),
+                    NotificationType.COMMENT,
+                    diaryId,
+                    member.getNickname()
+            );
+        }
     }
 
     // 댓글 수정
@@ -85,7 +101,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.COMMENT_NOT_FOUND));
 
-        if(!Objects.equals(currentMember.getId(), comment.getMember().getId())){
+        if (!Objects.equals(currentMember.getId(), comment.getMember().getId())) {
             throw new GlobalException(ErrorCode.COMMENT_NOT_FOUND);
         }
 
@@ -93,7 +109,7 @@ public class CommentService {
     }
 
     // 친구 프로필 DTO 변환
-    private CommentFriendResponse convertToCommentFriendResponseDTO(Member member){
+    private CommentFriendResponse convertToCommentFriendResponseDTO(Member member) {
         return CommentFriendResponse.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
@@ -102,7 +118,7 @@ public class CommentService {
     }
 
     // 댓글 DTO 변환
-    private CommentResponse convertToCommentResponseDTO(Comment comment){
+    private CommentResponse convertToCommentResponseDTO(Comment comment) {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .commentFriendResponse(convertToCommentFriendResponseDTO(comment.getMember()))
@@ -110,5 +126,5 @@ public class CommentService {
                 .createdAt(comment.getCreateAt())
                 .build();
     }
-}
 
+}

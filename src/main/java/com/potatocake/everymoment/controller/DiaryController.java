@@ -50,17 +50,17 @@ public class DiaryController {
     @Operation(summary = "자동 일기 작성", description = "자동으로 일기를 작성합니다.")
     @ApiResponse(responseCode = "200", description = "자동 일기 작성 성공", content = @Content(schema = @Schema(implementation = NotificationResponse.class)))
     @PostMapping("/auto")
-    public ResponseEntity<SuccessResponse<NotificationResponse>> createDiaryAuto(
+    public ResponseEntity<SuccessResponse> createDiaryAuto(
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
             @Parameter(description = "자동 일기 작성 정보", required = true)
             @RequestBody DiaryAutoCreateRequest diaryAutoCreateRequest) {
         Long memberId = memberDetails.getId();
 
-        NotificationResponse response = diaryService.createDiaryAuto(memberId, diaryAutoCreateRequest);
+        diaryService.createDiaryAuto(memberId, diaryAutoCreateRequest);
 
         return ResponseEntity.ok()
-                .body(SuccessResponse.ok(response));
+                .body(SuccessResponse.ok());
     }
 
     @Operation(summary = "수기 일기 작성", description = "수동으로 일기를 작성합니다.")

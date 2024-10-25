@@ -23,6 +23,10 @@ jobs:
           distribution: 'corretto'
           java-version: '21'
 
+      - name: FCM 서비스 계정 키 파일 생성
+        run: |
+          echo '${{ secrets.FCM_SERVICE_ACCOUNT_KEY }}' > ./src/main/resources/everymoment.json
+
       - name: AWS S3 관련 정보를 설정 파일에 주입
         uses: microsoft/variable-substitution@v1
         with:
