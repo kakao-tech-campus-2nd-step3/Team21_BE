@@ -6,6 +6,7 @@ import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.request.DiaryPatchRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
@@ -177,11 +178,11 @@ public class DiaryService {
     }
 
     // 내 일기 수정
-    public void updateDiary(Long memberId, Long diaryId, DiaryManualCreateRequest diaryManualCreateRequest) {
+    public void updateDiary(Long memberId, Long diaryId, DiaryPatchRequest diaryPatchRequest) {
         Diary existingDiary = getExistDiary(memberId, diaryId);
 
         // 카테고리 업데이트
-        List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
+        List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
         if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
             diaryCategoryRepository.deleteByDiary(existingDiary);
 
@@ -202,22 +203,11 @@ public class DiaryService {
             }
         }
 
-        if (diaryManualCreateRequest.getLocationPoint() != null) {
-            double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
-            double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
-
-            Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-
-            existingDiary.updateLocationPoint(point);
-        }
-
         //다이어리 업데이트
-        existingDiary.updateContent(diaryManualCreateRequest.getContent());
-        existingDiary.updateLocationName(diaryManualCreateRequest.getLocationName());
-        existingDiary.updateAddress(diaryManualCreateRequest.getAddress());
-        existingDiary.updateEmoji(diaryManualCreateRequest.getEmoji());
-        existingDiary.updateBookmark(diaryManualCreateRequest.isBookmark());
-        existingDiary.updatePublic(diaryManualCreateRequest.isPublic());
+        existingDiary.updateContent(diaryPatchRequest.getContent());
+        existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
+        existingDiary.updateAddress(diaryPatchRequest.getAddress());
+        existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
     }
 
     // 내 일기 삭제
