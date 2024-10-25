@@ -40,7 +40,7 @@ public class DiarySpecification {
 
             if (from != null && until != null) {
                 predicate = builder.and(predicate,
-                        builder.between(root.get("createAt"), from.atStartOfDay(), until.plusDays(1).atStartOfDay()));
+                        builder.between(root.get("createAt"), from, until));
             }
             if (isBookmark != null) {
                 predicate = builder.and(predicate, builder.equal(root.get("isBookmark"), isBookmark));
