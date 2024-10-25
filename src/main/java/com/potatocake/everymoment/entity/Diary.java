@@ -9,11 +9,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,9 +36,8 @@ public class Diary extends BaseTimeEntity {
     @Lob
     private String content;
 
-    //point는 mysql연결 뒤에
-    @Column(length = 250, nullable = false)
-    private String locationPoint;  // Java에서는 문자열로 처리
+    @Column(nullable = false)
+    private Point locationPoint;
 
     @Column(length = 50, nullable = false)
     private String locationName;
@@ -53,13 +56,16 @@ public class Diary extends BaseTimeEntity {
     @Builder.Default
     private boolean isPublic = false;
 
+    @OneToMany(mappedBy = "diary")
+    private Set<DiaryCategory> diaryCategories = new HashSet<>();
+
     public void updateContent(String content) {
         if (content != null) {
             this.content = content;
         }
     }
 
-    public void updateLocationPoint(String locationPoint) {
+    public void updateLocationPoint(Point locationPoint) {
         if (locationPoint != null) {
             this.locationPoint = locationPoint;
         }

@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.controller;
 
+import com.potatocake.everymoment.dto.LocationPoint;
 import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
@@ -49,17 +50,17 @@ public class DiaryController {
     @Operation(summary = "자동 일기 작성", description = "자동으로 일기를 작성합니다.")
     @ApiResponse(responseCode = "200", description = "자동 일기 작성 성공", content = @Content(schema = @Schema(implementation = NotificationResponse.class)))
     @PostMapping("/auto")
-    public ResponseEntity<SuccessResponse<NotificationResponse>> createDiaryAuto(
+    public ResponseEntity<SuccessResponse> createDiaryAuto(
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
             @Parameter(description = "자동 일기 작성 정보", required = true)
             @RequestBody DiaryAutoCreateRequest diaryAutoCreateRequest) {
         Long memberId = memberDetails.getId();
 
-        NotificationResponse response = diaryService.createDiaryAuto(memberId, diaryAutoCreateRequest);
+        diaryService.createDiaryAuto(memberId, diaryAutoCreateRequest);
 
         return ResponseEntity.ok()
-                .body(SuccessResponse.ok(response));
+                .body(SuccessResponse.ok());
     }
 
     @Operation(summary = "수기 일기 작성", description = "수동으로 일기를 작성합니다.")
@@ -87,8 +88,8 @@ public class DiaryController {
             @RequestParam(required = false) String keyword,
             @Parameter(description = "이모지 필터")
             @RequestParam(required = false) String emoji,
-            @Parameter(description = "카테고리 ID")
-            @RequestParam(required = false) Long category,
+            @Parameter(description = "카테고리")
+            @RequestParam(required = false) String category,
             @Parameter(description = "특정 날짜")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Parameter(description = "시작 날짜")
@@ -103,6 +104,7 @@ public class DiaryController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = memberDetails.getId();
+
         DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
                 .keyword(keyword)
                 .emoji(emoji)
@@ -110,7 +112,7 @@ public class DiaryController {
                 .date(date)
                 .from(from)
                 .until(until)
-                .bookmark(bookmark)
+                .isBookmark(bookmark)
                 .key(key)
                 .size(size)
                 .build();
@@ -132,6 +134,22 @@ public class DiaryController {
         Long memberId = memberDetails.getId();
 
         MyDiaryResponse response = diaryService.getMyDiary(memberId, diaryId);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok(response));
+    }
+
+    @Operation(summary = "특정 일기 위경도 조회", description = "특정 일기에 있는 위경도를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "위경도 조회 성공")
+    @GetMapping("/{diaryId}/location")
+    public ResponseEntity<SuccessResponse<LocationPoint>> getLocation(
+            @Parameter(description = "인증된 사용자 정보", hidden = true)
+            @AuthenticationPrincipal MemberDetails memberDetails,
+            @Parameter(description = "조회할 일기 ID", required = true)
+            @PathVariable Long diaryId) {
+        Long memberId = memberDetails.getId();
+
+        LocationPoint response = diaryService.getDiaryLocation(memberId, diaryId);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok(response));
@@ -213,8 +231,8 @@ public class DiaryController {
             @RequestParam(required = false) String keyword,
             @Parameter(description = "이모지 필터")
             @RequestParam(required = false) String emoji,
-            @Parameter(description = "카테고리 ID")
-            @RequestParam(required = false) Long category,
+            @Parameter(description = "카테고리")
+            @RequestParam(required = false) String category,
             @Parameter(description = "특정 날짜")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Parameter(description = "시작 날짜")
@@ -229,6 +247,7 @@ public class DiaryController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long memberId = memberDetails.getId();
+
         DiaryFilterRequest diaryFilterRequest = DiaryFilterRequest.builder()
                 .keyword(keyword)
                 .emoji(emoji)
@@ -236,7 +255,7 @@ public class DiaryController {
                 .date(date)
                 .from(from)
                 .until(until)
-                .bookmark(bookmark)
+                .isBookmark(bookmark)
                 .key(key)
                 .size(size)
                 .build();

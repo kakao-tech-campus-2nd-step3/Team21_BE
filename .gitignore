@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 
 application-dev.yml
+everymoment.json
 
 ### STS ###
 .apt_generated

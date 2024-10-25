@@ -1,12 +1,12 @@
 package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
-import com.potatocake.everymoment.dto.request.FileRequest;
 import com.potatocake.everymoment.dto.response.FileResponse;
 import com.potatocake.everymoment.security.MemberDetails;
 import com.potatocake.everymoment.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,10 +34,12 @@ public class FileController {
     private final FileService fileService;
 
     @Operation(summary = "파일 목록 조회", description = "특정 일기의 파일 목록을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "파일 목록 조회 성공", content = @Content(schema = @Schema(implementation = FileResponse.class)))
+    @ApiResponse(responseCode = "200", description = "파일 목록 조회 성공", content = @Content(array = @ArraySchema(schema = @Schema(implementation = FileResponse.class))))
     @GetMapping
-    public ResponseEntity<SuccessResponse<FileResponse>> getFiles(@Parameter(description = "조회할 일기 ID", required = true)
-                                                                  @PathVariable Long diaryId) {
+    public ResponseEntity<SuccessResponse<List<FileResponse>>> getFiles(
+            @Parameter(description = "조회할 일기 ID", required = true)
+            @PathVariable Long diaryId
+    ) {
         List<FileResponse> files = fileService.getFiles(diaryId);
 
         return ResponseEntity.ok()
@@ -53,11 +55,9 @@ public class FileController {
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
             @Parameter(description = "업로드할 파일 목록", required = true)
-            @RequestPart List<MultipartFile> files,
-            @Parameter(description = "일기에 보일 파일 이름과 순서", required = true)
-            @RequestPart List<FileRequest> info
+            @RequestPart List<MultipartFile> files
     ) {
-        fileService.uploadFiles(diaryId, memberDetails.getId(), files, info);
+        fileService.uploadFiles(diaryId, memberDetails.getId(), files);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());
@@ -72,11 +72,9 @@ public class FileController {
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
             @Parameter(description = "수정할 파일 목록", required = true)
-            @RequestPart List<MultipartFile> files,
-            @Parameter(description = "일기에 보일 파일 이름과 순서", required = true)
-            @RequestPart List<FileRequest> info
+            @RequestPart List<MultipartFile> files
     ) {
-        fileService.updateFiles(diaryId, memberDetails.getId(), files, info);
+        fileService.updateFiles(diaryId, memberDetails.getId(), files);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());

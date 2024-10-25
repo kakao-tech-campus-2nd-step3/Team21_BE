@@ -31,4 +31,13 @@ public class DiaryCategory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_category_id"), nullable = false)
     private Category category;
+
+    public void setDiary(Diary diary) {
+        this.diary = diary;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
 }

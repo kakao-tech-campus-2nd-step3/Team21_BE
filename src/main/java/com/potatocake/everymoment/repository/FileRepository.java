@@ -9,6 +9,10 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     List<File> findByDiaryId(Long diaryId);
 
+    List<File> findByDiary(Diary diary);
+
+    File findByDiaryAndOrder(Diary diary, int order);
+
     void deleteByDiary(Diary diary);
     
 }
