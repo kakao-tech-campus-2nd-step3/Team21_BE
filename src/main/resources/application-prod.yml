@@ -8,6 +8,7 @@ spring:
   jpa:
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           time_zone: Asia/Seoul
     hibernate:
