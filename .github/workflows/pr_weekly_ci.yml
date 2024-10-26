@@ -42,7 +42,7 @@ jobs:
       - name: 빌드 테스트 수행
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build --stacktrace
+          ./gradlew test --debug --info
 
       - name: 테스트 수행 결과 보고
         uses: EnricoMi/publish-unit-test-result-action@v2
