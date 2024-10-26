@@ -58,6 +58,7 @@ public class Diary extends BaseTimeEntity {
     private boolean isPublic = false;
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
     private Set<DiaryCategory> diaryCategories = new HashSet<>();
 
     public void updateContent(String content) {
