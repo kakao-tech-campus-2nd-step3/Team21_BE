@@ -94,20 +94,4 @@ public class FriendController {
                 .body(SuccessResponse.ok());
     }
 
-    @Operation(summary = "친한 친구 설정", description = "특정 친구를 친한 친구로 설정하거나 해제합니다.")
-    @ApiResponse(responseCode = "200", description = "친한 친구 설정 성공")
-    @PatchMapping("/{friendId}/bookmark")
-    public ResponseEntity<SuccessResponse<Void>> toggleCloseFriend(
-            @Parameter(description = "인증된 사용자 정보", hidden = true)
-            @AuthenticationPrincipal MemberDetails memberDetails,
-            @Parameter(description = "설정할 친구 ID", required = true)
-            @PathVariable Long friendId
-    ) {
-        Long memberId = memberDetails.getId();
-
-        friendService.toggleCloseFriend(memberId, friendId);
-
-        return ResponseEntity.ok()
-                .body(SuccessResponse.ok());
-    }
 }

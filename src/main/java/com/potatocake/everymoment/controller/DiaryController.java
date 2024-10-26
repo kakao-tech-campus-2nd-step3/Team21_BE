@@ -6,6 +6,7 @@ import com.potatocake.everymoment.dto.request.CommentRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.request.DiaryPatchRequest;
 import com.potatocake.everymoment.dto.response.CommentsResponse;
 import com.potatocake.everymoment.dto.response.FriendDiariesResponse;
 import com.potatocake.everymoment.dto.response.FriendDiaryResponse;
@@ -164,10 +165,10 @@ public class DiaryController {
             @Parameter(description = "수정할 일기 ID", required = true)
             @PathVariable Long diaryId,
             @Parameter(description = "일기 수정 정보", required = true)
-            @RequestBody DiaryManualCreateRequest diaryManualCreateRequest) {
+            @RequestBody DiaryPatchRequest diaryPatchRequest) {
         Long memberId = memberDetails.getId();
 
-        diaryService.updateDiary(memberId, diaryId, diaryManualCreateRequest);
+        diaryService.updateDiary(memberId, diaryId, diaryPatchRequest);
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());

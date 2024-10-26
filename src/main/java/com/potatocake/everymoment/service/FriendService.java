@@ -111,19 +111,6 @@ public class FriendService {
         friendRepository.delete(friendFriends);
     }
 
-    // 친한 친구 설정(토글)
-    public void toggleCloseFriend(Long memberId, Long friendId) {
-        Member currentMember = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-        Member friendMember = memberRepository.findById(friendId)
-                .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
-
-        Friend friend = friendRepository.findByMemberAndFriend(currentMember, friendMember)
-                .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
-
-        friend.toggleIsClose();
-    }
-
     //다이어리 DTO 변환
     private FriendDiarySimpleResponse convertToFriendDiariesResponseDTO(Diary savedDiary) {
         //파일 찾음
@@ -156,7 +143,6 @@ public class FriendService {
                 .id(friendMember.getId())
                 .nickname(friendMember.getNickname())
                 .profileImageUrl(friendMember.getProfileImageUrl())
-                .isClose(friend.isClose())
                 .build();
     }
 }
