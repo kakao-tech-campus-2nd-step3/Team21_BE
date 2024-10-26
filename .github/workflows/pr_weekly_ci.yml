@@ -39,6 +39,15 @@ jobs:
           aws.s3.accessKey: ${{ secrets.AWS_S3_ACCESS_KEY }}
           aws.s3.secretKey: ${{ secrets.AWS_S3_SECRET_KEY }}
 
+      - name: Secrets 주입 확인
+        run: |
+          echo "RDS_URL is set to ${{ secrets.RDS_URL }}"
+          echo "RDS_USERNAME is set to ${{ secrets.RDS_USERNAME }}"
+          echo "RDS_PASSWORD is set (masked)"
+          echo "AWS_S3_BUCKET is set to ${{ secrets.AWS_S3_BUCKET }}"
+          echo "AWS_S3_ACCESS_KEY is set to ${{ secrets.AWS_S3_ACCESS_KEY }}"
+          echo "AWS_S3_SECRET_KEY is set (masked)
+
       - name: 빌드 테스트 수행
         run: |
           chmod +x ./gradlew
