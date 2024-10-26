@@ -182,32 +182,53 @@ public class DiaryService {
         Diary existingDiary = getExistDiary(memberId, diaryId);
 
         // 카테고리 업데이트
-        List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
-        if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+        if (diaryPatchRequest.getDeleteAllCategories() != null && diaryPatchRequest.getDeleteAllCategories()) {
             diaryCategoryRepository.deleteByDiary(existingDiary);
+        } else {
+            List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
+            if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+                for (CategoryRequest categoryRequest : categoryRequestList) {
+                    Long categoryId = categoryRequest.getCategoryId();
 
-            for (CategoryRequest categoryRequest : categoryRequestList) {
-                Long categoryId = categoryRequest.getCategoryId();
+                    DiaryCategory diaryCategory = DiaryCategory.builder()
+                            .diary(existingDiary)
+                            .category(categoryRepository.findById(categoryId)
+                                    .map(category -> {
+                                        category.checkOwner(memberId);
+                                        return category;
+                                    })
+                                    .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
+                            .build();
 
-                DiaryCategory diaryCategory = DiaryCategory.builder()
-                        .diary(existingDiary)
-                        .category(categoryRepository.findById(categoryId)
-                                .map(category -> {
-                                    category.checkOwner(memberId);
-                                    return category;
-                                })
-                                .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
-                        .build();
-
-                diaryCategoryRepository.save(diaryCategory);
+                    diaryCategoryRepository.save(diaryCategory);
+                }
             }
         }
 
-        //다이어리 업데이트
-        existingDiary.updateContent(diaryPatchRequest.getContent());
-        existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
-        existingDiary.updateAddress(diaryPatchRequest.getAddress());
-        existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
+        // 다이어리 업데이트
+        if (diaryPatchRequest.getContentDelete() != null && diaryPatchRequest.getContentDelete()) {
+            existingDiary.updateContent(null);
+        } else {
+            existingDiary.updateContent(diaryPatchRequest.getContent());
+        }
+
+        if (diaryPatchRequest.getLocationNameDelete() != null && diaryPatchRequest.getLocationNameDelete()) {
+            existingDiary.updateLocationName(null);
+        } else {
+            existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
+        }
+
+        if (diaryPatchRequest.getAddressDelete() != null && diaryPatchRequest.getAddressDelete()) {
+            existingDiary.updateAddress(null);
+        } else {
+            existingDiary.updateAddress(diaryPatchRequest.getAddress());
+        }
+
+        if (diaryPatchRequest.getEmojiDelete() != null && diaryPatchRequest.getEmojiDelete()) {
+            existingDiary.updateEmoji(null);
+        } else {
+            existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
+        }
     }
 
     // 내 일기 삭제

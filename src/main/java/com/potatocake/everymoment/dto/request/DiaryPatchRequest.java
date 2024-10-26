@@ -8,6 +8,12 @@ import lombok.Getter;
 @Getter
 public class DiaryPatchRequest {
 
+    private Boolean deleteAllCategories;
+    private Boolean locationNameDelete;
+    private Boolean addressDelete;
+    private Boolean emojiDelete;
+    private Boolean contentDelete;
+
     private List<CategoryRequest> categories;
 
     @Size(max = 50, message = "장소명은 50자를 초과할 수 없습니다")
