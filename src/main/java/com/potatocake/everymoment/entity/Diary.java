@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -56,7 +57,7 @@ public class Diary extends BaseTimeEntity {
     @Builder.Default
     private boolean isPublic = false;
 
-    @OneToMany(mappedBy = "diary")
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<DiaryCategory> diaryCategories = new HashSet<>();
 
     public void updateContent(String content) {
