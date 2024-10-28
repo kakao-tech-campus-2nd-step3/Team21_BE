@@ -36,4 +36,13 @@ public class DiaryFilterRequest {
                 : Collections.emptyList();
     }
 
+    public boolean hasFilter() {
+        return (keyword != null && !keyword.isEmpty()) ||
+                (emoji != null && !emoji.isEmpty()) ||
+                (category != null && !category.isEmpty()) ||
+                date != null ||
+                from != null ||
+                until != null ||
+                isBookmark != null;
+    }
 }

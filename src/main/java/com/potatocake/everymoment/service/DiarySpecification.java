@@ -25,6 +25,7 @@ public class DiarySpecification {
             if (keyword != null) {
                 predicate = builder.and(predicate, builder.like(root.get("content"), "%" + keyword + "%"));
             }
+
             if (emojis != null && !emojis.isEmpty()) {
                 predicate = builder.and(predicate, root.get("emoji").in(emojis));
             }
@@ -35,13 +36,15 @@ public class DiarySpecification {
                 predicate = builder.and(predicate, categoryJoin.get("categoryName").in(categories));
             }
 
-            LocalDate filterDate = (date != null) ? date : LocalDate.now();
-            predicate = builder.and(predicate, builder.equal(root.get("createAt").as(LocalDate.class), filterDate));
+            if(date != null){
+                predicate = builder.and(predicate, builder.equal(root.get("createAt").as(LocalDate.class), date));
+            }
 
             if (from != null && until != null) {
                 predicate = builder.and(predicate,
-                        builder.between(root.get("createAt"), from, until));
+                        builder.between(root.get("createAt"), from, until.plusDays(1)));
             }
+
             if (isBookmark != null) {
                 predicate = builder.and(predicate, builder.equal(root.get("isBookmark"), isBookmark));
             }
