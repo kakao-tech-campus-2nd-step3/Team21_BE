@@ -23,6 +23,7 @@ import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -134,15 +135,33 @@ public class DiaryService {
         List<String> categories = diaryFilterRequest.getCategories();
         List<String> emojis = diaryFilterRequest.getEmojis();
 
-        Specification<Diary> spec = DiarySpecification.filterDiaries(
-                        diaryFilterRequest.getKeyword(),
-                        emojis,
-                        categories,
-                        diaryFilterRequest.getDate(),
-                        diaryFilterRequest.getFrom(),
-                        diaryFilterRequest.getUntil(),
-                        diaryFilterRequest.getIsBookmark())
-                .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        Specification<Diary> spec;
+
+        if(!diaryFilterRequest.hasFilter()){
+            LocalDate today = LocalDate.now();
+
+            spec = DiarySpecification.filterDiaries(
+                            diaryFilterRequest.getKeyword(),
+                            emojis,
+                            categories,
+                            today,
+                            diaryFilterRequest.getFrom(),
+                            diaryFilterRequest.getUntil(),
+                            diaryFilterRequest.getIsBookmark())
+                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        }
+
+        else{
+            spec = DiarySpecification.filterDiaries(
+                            diaryFilterRequest.getKeyword(),
+                            emojis,
+                            categories,
+                            diaryFilterRequest.getDate(),
+                            diaryFilterRequest.getFrom(),
+                            diaryFilterRequest.getUntil(),
+                            diaryFilterRequest.getIsBookmark())
+                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        }
 
         diaryPage = diaryRepository.findAll(spec,
                 PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
