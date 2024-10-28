@@ -39,6 +39,7 @@ public class Member extends BaseTimeEntity {
     private String profileImageUrl;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean deleted = false;
 
     public void update(String nickname, String profileImageUrl) {

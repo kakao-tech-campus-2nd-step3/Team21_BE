@@ -3,10 +3,12 @@ spring:
     url: ${RDS_URL}
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         jdbc:
           time_zone: Asia/Seoul
     hibernate:
@@ -14,7 +16,7 @@ spring:
 
   h2:
     console:
-      enabled: true
+      enabled: false
 
   servlet:
     multipart:
