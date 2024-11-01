@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @Builder
-public class Comment extends BaseTimeEntity{
+public class Comment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,6 +34,7 @@ public class Comment extends BaseTimeEntity{
     private Diary diary;
 
     @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     public void updateContent(String content) {
