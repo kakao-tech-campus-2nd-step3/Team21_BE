@@ -71,8 +71,8 @@ public class FileController {
             @PathVariable Long diaryId,
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
-            @Parameter(description = "수정할 파일 목록", required = true)
-            @RequestPart List<MultipartFile> files
+            @Parameter(description = "수정할 파일 목록")
+            @RequestPart(required = false) List<MultipartFile> files
     ) {
         fileService.updateFiles(diaryId, memberDetails.getId(), files);
 
