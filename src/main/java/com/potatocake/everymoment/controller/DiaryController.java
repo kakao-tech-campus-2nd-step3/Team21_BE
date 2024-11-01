@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -309,7 +310,7 @@ public class DiaryController {
             @Parameter(description = "댓글을 작성할 일기 ID", required = true)
             @PathVariable Long diaryId,
             @Parameter(description = "댓글 작성 정보", required = true)
-            @RequestBody CommentRequest commentRequest) {
+            @RequestBody @Valid CommentRequest commentRequest) {
         Long memberId = memberDetails.getId();
 
         commentService.createComment(memberId, diaryId, commentRequest);
