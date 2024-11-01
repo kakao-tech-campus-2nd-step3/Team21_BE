@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,7 +36,7 @@ public class CommentController {
             @Parameter(description = "수정할 댓글 ID", required = true)
             @PathVariable Long commentId,
             @Parameter(description = "댓글 수정 정보", required = true)
-            @RequestBody CommentRequest commentRequest) {
+            @RequestBody @Valid CommentRequest commentRequest) {
         Long memberId = memberDetails.getId();
 
         commentService.updateComment(memberId, commentId, commentRequest);

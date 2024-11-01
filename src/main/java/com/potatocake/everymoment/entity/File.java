@@ -6,7 +6,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,7 +24,7 @@ public class File extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Diary diary;
 
-    @Lob
+    @Column(length = 2083, nullable = false)
     private String imageUrl;
 
     @Column(name = "\"order\"")

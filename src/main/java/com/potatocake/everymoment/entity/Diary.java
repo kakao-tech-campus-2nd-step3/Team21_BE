@@ -34,7 +34,7 @@ public class Diary extends BaseTimeEntity {
     @JoinColumn(nullable = false)
     private Member member;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
@@ -43,7 +43,7 @@ public class Diary extends BaseTimeEntity {
     @Column(length = 50, nullable = false)
     private String locationName;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String address;
 
     @Lob

@@ -64,7 +64,9 @@ public class FileService {
 
         fileRepository.deleteByDiary(diary);
 
-        uploadFiles(diaryId, memberId, files);
+        if (files != null && !files.isEmpty()) {
+            uploadFiles(diaryId, memberId, files);
+        }
     }
 
 }
