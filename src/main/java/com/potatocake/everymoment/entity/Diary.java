@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,7 +34,7 @@ public class Diary extends BaseTimeEntity {
     @JoinColumn(nullable = false)
     private Member member;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
@@ -42,7 +43,7 @@ public class Diary extends BaseTimeEntity {
     @Column(length = 50, nullable = false)
     private String locationName;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String address;
 
     @Lob
@@ -56,7 +57,8 @@ public class Diary extends BaseTimeEntity {
     @Builder.Default
     private boolean isPublic = false;
 
-    @OneToMany(mappedBy = "diary")
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @Builder.Default
     private Set<DiaryCategory> diaryCategories = new HashSet<>();
 
     public void updateContent(String content) {

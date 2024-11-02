@@ -32,11 +32,4 @@ public class Friend {
     @JoinColumn(nullable = false)
     private Member friend;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private boolean isClose = false;
-
-    public void toggleIsClose() {
-        this.isClose = !this.isClose;
-    }
 }

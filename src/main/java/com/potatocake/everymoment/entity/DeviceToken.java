@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,11 +26,10 @@ public class DeviceToken extends BaseTimeEntity {
     @JoinColumn(nullable = false)
     private Member member;
 
-    @Column(nullable = false)
+    @Column(length = 512, nullable = false)
     private String fcmToken;
 
-    @Column(nullable = false)
-    @Lob
+    @Column(length = 512, nullable = false)
     private String deviceId;
 
     @Builder

@@ -6,6 +6,7 @@ import com.potatocake.everymoment.dto.request.CategoryRequest;
 import com.potatocake.everymoment.dto.request.DiaryAutoCreateRequest;
 import com.potatocake.everymoment.dto.request.DiaryFilterRequest;
 import com.potatocake.everymoment.dto.request.DiaryManualCreateRequest;
+import com.potatocake.everymoment.dto.request.DiaryPatchRequest;
 import com.potatocake.everymoment.dto.response.CategoryResponse;
 import com.potatocake.everymoment.dto.response.MyDiariesResponse;
 import com.potatocake.everymoment.dto.response.MyDiaryResponse;
@@ -22,6 +23,7 @@ import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -133,15 +135,33 @@ public class DiaryService {
         List<String> categories = diaryFilterRequest.getCategories();
         List<String> emojis = diaryFilterRequest.getEmojis();
 
-        Specification<Diary> spec = DiarySpecification.filterDiaries(
-                        diaryFilterRequest.getKeyword(),
-                        emojis,
-                        categories,
-                        diaryFilterRequest.getDate(),
-                        diaryFilterRequest.getFrom(),
-                        diaryFilterRequest.getUntil(),
-                        diaryFilterRequest.getIsBookmark())
-                .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        Specification<Diary> spec;
+
+        if(!diaryFilterRequest.hasFilter()){
+            LocalDate today = LocalDate.now();
+
+            spec = DiarySpecification.filterDiaries(
+                            diaryFilterRequest.getKeyword(),
+                            emojis,
+                            categories,
+                            today,
+                            diaryFilterRequest.getFrom(),
+                            diaryFilterRequest.getUntil(),
+                            diaryFilterRequest.getIsBookmark())
+                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        }
+
+        else{
+            spec = DiarySpecification.filterDiaries(
+                            diaryFilterRequest.getKeyword(),
+                            emojis,
+                            categories,
+                            diaryFilterRequest.getDate(),
+                            diaryFilterRequest.getFrom(),
+                            diaryFilterRequest.getUntil(),
+                            diaryFilterRequest.getIsBookmark())
+                    .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+        }
 
         diaryPage = diaryRepository.findAll(spec,
                 PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
@@ -177,47 +197,57 @@ public class DiaryService {
     }
 
     // 내 일기 수정
-    public void updateDiary(Long memberId, Long diaryId, DiaryManualCreateRequest diaryManualCreateRequest) {
+    public void updateDiary(Long memberId, Long diaryId, DiaryPatchRequest diaryPatchRequest) {
         Diary existingDiary = getExistDiary(memberId, diaryId);
 
         // 카테고리 업데이트
-        List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
-        if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+        if (diaryPatchRequest.getDeleteAllCategories() != null && diaryPatchRequest.getDeleteAllCategories()) {
             diaryCategoryRepository.deleteByDiary(existingDiary);
+        } else {
+            List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
+            if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+                for (CategoryRequest categoryRequest : categoryRequestList) {
+                    Long categoryId = categoryRequest.getCategoryId();
 
-            for (CategoryRequest categoryRequest : categoryRequestList) {
-                Long categoryId = categoryRequest.getCategoryId();
+                    DiaryCategory diaryCategory = DiaryCategory.builder()
+                            .diary(existingDiary)
+                            .category(categoryRepository.findById(categoryId)
+                                    .map(category -> {
+                                        category.checkOwner(memberId);
+                                        return category;
+                                    })
+                                    .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
+                            .build();
 
-                DiaryCategory diaryCategory = DiaryCategory.builder()
-                        .diary(existingDiary)
-                        .category(categoryRepository.findById(categoryId)
-                                .map(category -> {
-                                    category.checkOwner(memberId);
-                                    return category;
-                                })
-                                .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
-                        .build();
-
-                diaryCategoryRepository.save(diaryCategory);
+                    diaryCategoryRepository.save(diaryCategory);
+                }
             }
         }
 
-        if (diaryManualCreateRequest.getLocationPoint() != null) {
-            double longitude = diaryManualCreateRequest.getLocationPoint().getLongitude();
-            double latitude = diaryManualCreateRequest.getLocationPoint().getLatitude();
-
-            Point point = geometryFactory.createPoint(new Coordinate(longitude, latitude));
-
-            existingDiary.updateLocationPoint(point);
+        // 다이어리 업데이트
+        if (diaryPatchRequest.getContentDelete() != null && diaryPatchRequest.getContentDelete()) {
+            existingDiary.updateContent(null);
+        } else {
+            existingDiary.updateContent(diaryPatchRequest.getContent());
         }
 
-        //다이어리 업데이트
-        existingDiary.updateContent(diaryManualCreateRequest.getContent());
-        existingDiary.updateLocationName(diaryManualCreateRequest.getLocationName());
-        existingDiary.updateAddress(diaryManualCreateRequest.getAddress());
-        existingDiary.updateEmoji(diaryManualCreateRequest.getEmoji());
-        existingDiary.updateBookmark(diaryManualCreateRequest.isBookmark());
-        existingDiary.updatePublic(diaryManualCreateRequest.isPublic());
+        if (diaryPatchRequest.getLocationNameDelete() != null && diaryPatchRequest.getLocationNameDelete()) {
+            existingDiary.updateLocationName(null);
+        } else {
+            existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
+        }
+
+        if (diaryPatchRequest.getAddressDelete() != null && diaryPatchRequest.getAddressDelete()) {
+            existingDiary.updateAddress(null);
+        } else {
+            existingDiary.updateAddress(diaryPatchRequest.getAddress());
+        }
+
+        if (diaryPatchRequest.getEmojiDelete() != null && diaryPatchRequest.getEmojiDelete()) {
+            existingDiary.updateEmoji(null);
+        } else {
+            existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
+        }
     }
 
     // 내 일기 삭제
