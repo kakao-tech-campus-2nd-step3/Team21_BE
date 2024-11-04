@@ -39,7 +39,7 @@ public class SwaggerConfig {
         return openApi -> {
             SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
             openApi.getPaths().forEach((path, item) -> {
-                if (!"/api/members/login".equals(path)) {
+                if (!"/api/members/login".equals(path) && !"/api/members/anonymous-login".equals(path)) {
                     item.readOperations().forEach(operation -> {
                         operation.addSecurityItem(securityRequirement);
                     });
