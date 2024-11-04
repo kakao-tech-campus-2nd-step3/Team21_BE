@@ -91,6 +91,15 @@ public class Diary extends BaseTimeEntity {
         }
     }
 
+    public void updateContentNull() {
+        this.content = null;
+    }
+
+    public void updateEmojiNull() {
+        this.emoji = null;
+
+    }
+
     public void updateBookmark(boolean isBookmark) {
         this.isBookmark = isBookmark;
     }
@@ -112,3 +121,4 @@ public class Diary extends BaseTimeEntity {
     }
 
 }
+

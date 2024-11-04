@@ -20,11 +20,13 @@ import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,18 +58,17 @@ public class FriendDiaryService {
         List<String> categories = diaryFilterRequest.getCategories();
         List<String> emojis = diaryFilterRequest.getEmojis();
 
-        Specification<Diary> spec = DiarySpecification.filterDiaries(
-                        diaryFilterRequest.getKeyword(),
-                        emojis,
-                        categories,
-                        diaryFilterRequest.getDate(),
-                        diaryFilterRequest.getFrom(),
-                        diaryFilterRequest.getUntil(),
-                        diaryFilterRequest.getIsBookmark())
-                .and((root, query, builder) -> root.get("member").get("id").in(friendIdList));
+        Specification<Diary> spec = FriendDiarySpecification.filterDiaries(
+                            diaryFilterRequest.getKeyword(),
+                            emojis,
+                            categories,
+                            diaryFilterRequest.getDate(),
+                            diaryFilterRequest.getFrom(),
+                            diaryFilterRequest.getUntil())
+                    .and((root, query, builder) -> root.get("member").get("id").in(friendIdList));
 
         diaryPage = diaryRepository.findAll(spec,
-                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
+                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(), Sort.by(Sort.Direction.DESC, "createAt")));
 
         List<FriendDiarySimpleResponse> friendDiarySimpleResponseList = diaryPage.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -151,5 +152,4 @@ public class FriendDiaryService {
                 .createAt(savedDiary.getCreateAt())
                 .build();
     }
-    
 }
