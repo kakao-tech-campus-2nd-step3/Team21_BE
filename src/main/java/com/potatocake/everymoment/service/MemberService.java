@@ -2,6 +2,7 @@ package com.potatocake.everymoment.service;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+import com.potatocake.everymoment.dto.response.AnonymousLoginResponse;
 import com.potatocake.everymoment.dto.response.FriendRequestStatus;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberMyResponse;
@@ -13,6 +14,7 @@ import com.potatocake.everymoment.exception.GlobalException;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.FriendRequestRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
+import com.potatocake.everymoment.util.JwtUtil;
 import com.potatocake.everymoment.util.PagingUtil;
 import com.potatocake.everymoment.util.S3FileUploader;
 import java.util.List;
@@ -35,6 +37,7 @@ public class MemberService {
     private final FriendRepository friendRepository;
     private final PagingUtil pagingUtil;
     private final S3FileUploader s3FileUploader;
+    private final JwtUtil jwtUtil;
 
     @Transactional(readOnly = true)
     public MemberSearchResponse searchMembers(String nickname, Long key, int size, Long currentMemberId) {
@@ -70,6 +73,39 @@ public class MemberService {
                 .profileImageUrl(member.getProfileImageUrl())
                 .nickname(member.getNickname())
                 .build();
+    }
+
+    public AnonymousLoginResponse anonymousLogin(Long memberNumber) {
+        if (memberNumber != null) {
+            // 기존 회원번호로 로그인 시도
+            return memberRepository.findByNumber(memberNumber)
+                    .map(member -> AnonymousLoginResponse.builder()
+                            .token(jwtUtil.create(member.getId()))
+                            .build())
+                    .orElseGet(this::createAnonymousLoginResponse);
+        }
+
+        // 새로운 익명 회원 생성 및 응답
+        return createAnonymousLoginResponse();
+    }
+
+    private AnonymousLoginResponse createAnonymousLoginResponse() {
+        Member newMember = createAnonymousMember();
+        return AnonymousLoginResponse.builder()
+                .number(newMember.getNumber())
+                .token(jwtUtil.create(newMember.getId()))
+                .build();
+    }
+
+    private Member createAnonymousMember() {
+        Long nextNumber = memberRepository.findNextAnonymousNumber();
+
+        Member member = Member.builder()
+                .nickname("Anonymous")
+                .number(nextNumber)
+                .build();
+
+        return memberRepository.save(member);
     }
 
     public void updateMemberInfo(Long id, MultipartFile profileImage, String nickname) {
