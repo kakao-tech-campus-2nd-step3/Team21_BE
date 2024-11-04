@@ -44,7 +44,7 @@ public class FriendDiarySpecification {
                         builder.between(root.get("createAt"), from, until.plusDays(1)));
             }
 
-            predicate = builder.and(predicate, builder.isTrue(root.get("public")));
+            predicate = builder.and(predicate, builder.isTrue(root.get("isPublic")));
 
             return predicate;
         };
