@@ -33,6 +33,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,6 +150,9 @@ public class DiaryService {
                             diaryFilterRequest.getUntil(),
                             diaryFilterRequest.getIsBookmark())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
+
+            diaryPage = diaryRepository.findAll(spec,
+                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
         }
 
         else{
@@ -161,10 +165,10 @@ public class DiaryService {
                             diaryFilterRequest.getUntil(),
                             diaryFilterRequest.getIsBookmark())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
-        }
 
-        diaryPage = diaryRepository.findAll(spec,
-                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
+            diaryPage = diaryRepository.findAll(spec,
+                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(), Sort.by(Sort.Direction.DESC, "createAt")));
+        }
 
         List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
                 .map(this::convertToMyDiarySimpleResponseDto)
@@ -205,7 +209,10 @@ public class DiaryService {
             diaryCategoryRepository.deleteByDiary(existingDiary);
         } else {
             List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
+
             if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+                diaryCategoryRepository.deleteByDiary(existingDiary);
+
                 for (CategoryRequest categoryRequest : categoryRequestList) {
                     Long categoryId = categoryRequest.getCategoryId();
 
@@ -226,25 +233,16 @@ public class DiaryService {
 
         // 다이어리 업데이트
         if (diaryPatchRequest.getContentDelete() != null && diaryPatchRequest.getContentDelete()) {
-            existingDiary.updateContent(null);
+            existingDiary.updateContentNull();
         } else {
             existingDiary.updateContent(diaryPatchRequest.getContent());
         }
 
-        if (diaryPatchRequest.getLocationNameDelete() != null && diaryPatchRequest.getLocationNameDelete()) {
-            existingDiary.updateLocationName(null);
-        } else {
-            existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
-        }
-
-        if (diaryPatchRequest.getAddressDelete() != null && diaryPatchRequest.getAddressDelete()) {
-            existingDiary.updateAddress(null);
-        } else {
-            existingDiary.updateAddress(diaryPatchRequest.getAddress());
-        }
+        existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
+        existingDiary.updateAddress(diaryPatchRequest.getAddress());
 
         if (diaryPatchRequest.getEmojiDelete() != null && diaryPatchRequest.getEmojiDelete()) {
-            existingDiary.updateEmoji(null);
+            existingDiary.updateEmojiNull();
         } else {
             existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
         }

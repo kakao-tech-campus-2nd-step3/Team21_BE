@@ -34,7 +34,7 @@ public class Diary extends BaseTimeEntity {
     @JoinColumn(nullable = false)
     private Member member;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String content;
 
     @Column(nullable = false)
@@ -43,7 +43,7 @@ public class Diary extends BaseTimeEntity {
     @Column(length = 50, nullable = false)
     private String locationName;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = 50, nullable = false)
     private String address;
 
     @Lob
@@ -91,6 +91,15 @@ public class Diary extends BaseTimeEntity {
         }
     }
 
+    public void updateContentNull() {
+        this.content = null;
+    }
+
+    public void updateEmojiNull() {
+        this.emoji = null;
+
+    }
+
     public void updateBookmark(boolean isBookmark) {
         this.isBookmark = isBookmark;
     }
@@ -112,3 +121,4 @@ public class Diary extends BaseTimeEntity {
     }
 
 }
+

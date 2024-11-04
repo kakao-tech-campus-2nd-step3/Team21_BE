@@ -8,8 +8,6 @@ import lombok.Getter;
 public class DiaryPatchRequest {
 
     private Boolean deleteAllCategories;
-    private Boolean locationNameDelete;
-    private Boolean addressDelete;
     private Boolean emojiDelete;
     private Boolean contentDelete;
 
