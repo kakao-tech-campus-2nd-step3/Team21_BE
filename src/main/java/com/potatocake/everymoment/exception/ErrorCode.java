@@ -35,7 +35,7 @@ public enum ErrorCode {
 
     /* File */
     FILE_NOT_FOUND("존재하지 않는 파일입니다.", NOT_FOUND),
-    FILE_SIZE_EXCEEDED("각 파일은 1MB 이하로, 전체 파일 크기는 10MB 이하로 첨부해 주세요.", PAYLOAD_TOO_LARGE),
+    FILE_SIZE_EXCEEDED("각 파일은 5MB 이하로, 전체 파일 크기는 25MB 이하로 첨부해 주세요.", PAYLOAD_TOO_LARGE),
 
     /* Comment */
     COMMENT_NOT_FOUND("존재하지 않는 댓글입니다.", NOT_FOUND),
