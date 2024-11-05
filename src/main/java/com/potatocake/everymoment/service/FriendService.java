@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,10 +50,10 @@ public class FriendService {
         friendRepository.findByMemberAndFriend(currentMember, friend)
                 .orElseThrow(() -> new GlobalException(ErrorCode.FRIEND_NOT_FOUND));
 
-        Pageable pageable = PageRequest.of(key, size);
+        Pageable pageable = PageRequest.of(key, size, Sort.by(Sort.Direction.DESC, "createAt"));
 
         Page<Diary> diaries = diaryRepository.findAll(
-                DiarySpecification.filterDiaries(null, null, null, date, null, null, null)
+                FriendDiarySpecification.filterDiaries(null, null, null, date, null, null)
                         .and((root, query, builder) -> builder.equal(root.get("member").get("id"), friendId)),
                 pageable);
 
