@@ -87,6 +87,10 @@ public class FriendDiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
+        if(!diary.isPublic()){
+            throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
+        }
+
         //글쓴사람이 친구인지 확인
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
