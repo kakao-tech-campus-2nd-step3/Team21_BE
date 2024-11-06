@@ -25,7 +25,7 @@ class CategoryRepositoryTest {
         Member member = Member.builder()
                 .number(1234L)
                 .nickname("testUser")
-                .profileImageUrl("http://example.com/image.jpg")
+                .profileImageUrl("https://example.com/image.jpg")
                 .build();
         return memberRepository.save(member);
     }
