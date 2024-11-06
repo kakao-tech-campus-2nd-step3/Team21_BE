@@ -20,7 +20,6 @@ import com.potatocake.everymoment.repository.FileRepository;
 import com.potatocake.everymoment.repository.FriendRepository;
 import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -59,16 +58,17 @@ public class FriendDiaryService {
         List<String> emojis = diaryFilterRequest.getEmojis();
 
         Specification<Diary> spec = FriendDiarySpecification.filterDiaries(
-                            diaryFilterRequest.getKeyword(),
-                            emojis,
-                            categories,
-                            diaryFilterRequest.getDate(),
-                            diaryFilterRequest.getFrom(),
-                            diaryFilterRequest.getUntil())
-                    .and((root, query, builder) -> root.get("member").get("id").in(friendIdList));
+                        diaryFilterRequest.getKeyword(),
+                        emojis,
+                        categories,
+                        diaryFilterRequest.getDate(),
+                        diaryFilterRequest.getFrom(),
+                        diaryFilterRequest.getUntil())
+                .and((root, query, builder) -> root.get("member").get("id").in(friendIdList));
 
         diaryPage = diaryRepository.findAll(spec,
-                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(), Sort.by(Sort.Direction.DESC, "createAt")));
+                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(),
+                        Sort.by(Sort.Direction.DESC, "createAt")));
 
         List<FriendDiarySimpleResponse> friendDiarySimpleResponseList = diaryPage.getContent().stream()
                 .map(this::convertToFriendDiariesResponseDTO)
@@ -87,7 +87,7 @@ public class FriendDiaryService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
-        if(!diary.isPublic()){
+        if (!diary.isPublic()) {
             throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
         }
 
@@ -115,6 +115,7 @@ public class FriendDiaryService {
 
         //like 갯수 반환
         Long likeCount = likeRepository.countByDiary(diary);
+        boolean isLiked = likeRepository.existsByMemberIdAndDiaryId(memberId, diary.getId());
 
         LikeCountResponse count = LikeCountResponse.builder()
                 .likeCount(likeCount)
@@ -127,6 +128,7 @@ public class FriendDiaryService {
                 .emoji(diary.getEmoji())
                 .content(diary.getContent())
                 .likeCount(count)
+                .isLiked(isLiked)
                 .createAt(diary.getCreateAt())
                 .build();
 

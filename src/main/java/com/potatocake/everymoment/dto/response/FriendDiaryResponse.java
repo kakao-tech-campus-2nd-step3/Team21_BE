@@ -18,5 +18,6 @@ public class FriendDiaryResponse {
     private String emoji;
     private String content;
     private LikeCountResponse likeCount;
+    private boolean isLiked;
     private LocalDateTime createAt;
 }

@@ -72,7 +72,7 @@ public class DiaryController {
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
             @Parameter(description = "수기 일기 작성 정보", required = true)
-            @RequestBody DiaryManualCreateRequest diaryManualCreateRequest) {
+            @RequestBody @Valid DiaryManualCreateRequest diaryManualCreateRequest) {
         Long memberId = memberDetails.getId();
         diaryService.createDiaryManual(memberId, diaryManualCreateRequest);
 
