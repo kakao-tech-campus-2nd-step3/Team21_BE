@@ -12,7 +12,7 @@ spring:
         jdbc:
           time_zone: Asia/Seoul
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
   h2:
     console:

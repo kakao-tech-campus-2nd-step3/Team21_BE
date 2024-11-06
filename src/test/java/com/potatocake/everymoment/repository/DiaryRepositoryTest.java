@@ -12,15 +12,12 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class DiaryRepositoryTest {
 
     @Autowired
@@ -28,9 +25,6 @@ class DiaryRepositoryTest {
 
     @Autowired
     private MemberRepository memberRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Test
     @DisplayName("일기가 성공적으로 저장된다.")
@@ -59,8 +53,6 @@ class DiaryRepositoryTest {
         Diary diary2 = createDiary(member, "Content 2", "Busan", "Address 2");
 
         diaryRepository.saveAll(List.of(diary1, diary2));
-        entityManager.flush();
-        entityManager.clear();
 
         // when
         Specification<Diary> spec = (root, query, builder) ->
@@ -104,8 +96,6 @@ class DiaryRepositoryTest {
                 .build();
 
         diaryRepository.saveAll(List.of(diary1, diary2));
-        entityManager.flush();
-        entityManager.clear();
 
         // when
         Specification<Diary> spec = DiarySpecification.filterDiaries(
@@ -155,8 +145,6 @@ class DiaryRepositoryTest {
                 .build();
 
         diaryRepository.saveAll(List.of(diary1, diary2));
-        entityManager.flush();
-        entityManager.clear();
 
         // when
         Specification<Diary> spec = DiarySpecification.filterDiaries(
@@ -197,5 +185,5 @@ class DiaryRepositoryTest {
                 .isPublic(false)
                 .build();
     }
-    
+
 }
