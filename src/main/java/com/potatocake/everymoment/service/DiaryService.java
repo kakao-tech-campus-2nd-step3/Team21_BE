@@ -22,6 +22,7 @@ import com.potatocake.everymoment.repository.CategoryRepository;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
+import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -48,6 +49,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final FileRepository fileRepository;
+    private final LikeRepository likeRepository;
     private final GeometryFactory geometryFactory;
     private final NotificationService notificationService;
 
@@ -138,7 +140,7 @@ public class DiaryService {
 
         Specification<Diary> spec;
 
-        if(!diaryFilterRequest.hasFilter()){
+        if (!diaryFilterRequest.hasFilter()) {
             LocalDate today = LocalDate.now();
 
             spec = DiarySpecification.filterDiaries(
@@ -153,9 +155,7 @@ public class DiaryService {
 
             diaryPage = diaryRepository.findAll(spec,
                     PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
-        }
-
-        else{
+        } else {
             spec = DiarySpecification.filterDiaries(
                             diaryFilterRequest.getKeyword(),
                             emojis,
@@ -167,7 +167,8 @@ public class DiaryService {
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,
-                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(), Sort.by(Sort.Direction.DESC, "createAt")));
+                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(),
+                            Sort.by(Sort.Direction.DESC, "createAt")));
         }
 
         List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
@@ -186,7 +187,7 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public MyDiaryResponse getMyDiary(Long memberId, Long diaryId) {
         Diary diary = getExistDiary(memberId, diaryId);
-        return convertToMyDiaryResponseDto(diary);
+        return convertToMyDiaryResponseDto(diary, memberId);
     }
 
     // 내 일기 위치 조회
@@ -282,7 +283,7 @@ public class DiaryService {
     }
 
     //상세 조회시 일기DTO 변환
-    private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary) {
+    private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary, Long memberId) {
         // 카테고리 찾음
         List<DiaryCategory> diaryCategories = diaryCategoryRepository.findByDiary(savedDiary);
         List<CategoryResponse> categoryResponseList = diaryCategories.stream()
@@ -292,6 +293,8 @@ public class DiaryService {
                         .build())
                 .collect(Collectors.toList());
 
+        boolean isLiked = likeRepository.existsByMemberIdAndDiaryId(memberId, savedDiary.getId());
+
         return MyDiaryResponse.builder()
                 .id(savedDiary.getId())
                 .categories(categoryResponseList)
@@ -300,6 +303,7 @@ public class DiaryService {
                 .isBookmark(savedDiary.isBookmark())
                 .emoji(savedDiary.getEmoji())
                 .content(savedDiary.getContent())
+                .isLiked(isLiked)
                 .createAt(savedDiary.getCreateAt())
                 .build();
     }

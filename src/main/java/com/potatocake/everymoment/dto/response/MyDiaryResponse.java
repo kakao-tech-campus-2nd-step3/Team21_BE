@@ -15,5 +15,6 @@ public class MyDiaryResponse {
     private boolean isBookmark;
     private String emoji;
     private String content;
+    private boolean isLiked;
     private LocalDateTime createAt;
 }
