@@ -62,13 +62,13 @@ public class CommentController {
                 .body(SuccessResponse.ok());
     }
 
-    @Operation(summary = "댓글 개수", description = "일기당 댓글 개수를 반환합니다.")
-    @ApiResponse(responseCode = "200", description = "댓글 개수 반환 성공")
+    @Operation(summary = "댓글 개수", description = "특정 일기의 댓글 개수를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "댓글 개수 조회 성공")
     @GetMapping("/{diaryId}/count")
     public ResponseEntity<SuccessResponse<Void>> getCommentCount(
             @Parameter(description = "인증된 사용자 정보", hidden = true)
             @AuthenticationPrincipal MemberDetails memberDetails,
-            @Parameter(description = "댓글을 작성할 일기 ID", required = true)
+            @Parameter(description = "댓글 개수를 조회할 일기 ID", required = true)
             @PathVariable Long diaryId) {
         Long commentCount = commentService.getCommentCountByDiary(diaryId);
 
