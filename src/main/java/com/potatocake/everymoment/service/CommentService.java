@@ -128,4 +128,7 @@ public class CommentService {
                 .build();
     }
 
+    public Long getCommentCountByDiary(Long diaryId) {
+        return commentRepository.countByDiaryId(diaryId);
+    }
 }

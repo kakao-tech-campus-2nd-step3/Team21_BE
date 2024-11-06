@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -59,5 +60,19 @@ public class CommentController {
 
         return ResponseEntity.ok()
                 .body(SuccessResponse.ok());
+    }
+
+    @Operation(summary = "댓글 개수", description = "일기당 댓글 개수를 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "댓글 개수 반환 성공")
+    @GetMapping("/{diaryId}/count")
+    public ResponseEntity<SuccessResponse<Void>> getCommentCount(
+            @Parameter(description = "인증된 사용자 정보", hidden = true)
+            @AuthenticationPrincipal MemberDetails memberDetails,
+            @Parameter(description = "댓글을 작성할 일기 ID", required = true)
+            @PathVariable Long diaryId) {
+        Long commentCount = commentService.getCommentCountByDiary(diaryId);
+
+        return ResponseEntity.ok()
+                .body(SuccessResponse.ok(commentCount));
     }
 }
