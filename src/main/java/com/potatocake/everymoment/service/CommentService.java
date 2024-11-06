@@ -121,6 +121,7 @@ public class CommentService {
     private CommentResponse convertToCommentResponseDTO(Comment comment) {
         return CommentResponse.builder()
                 .id(comment.getId())
+                .memberId(comment.getMember().getId())
                 .commentFriendResponse(convertToCommentFriendResponseDTO(comment.getMember()))
                 .content(comment.getContent())
                 .createdAt(comment.getCreateAt())
