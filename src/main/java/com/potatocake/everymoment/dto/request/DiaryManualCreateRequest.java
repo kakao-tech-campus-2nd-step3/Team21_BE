@@ -1,10 +1,13 @@
 package com.potatocake.everymoment.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.potatocake.everymoment.dto.LocationPoint;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
 
+@Builder
 @Getter
 public class DiaryManualCreateRequest {
 
@@ -18,7 +21,10 @@ public class DiaryManualCreateRequest {
     @Size(max = 250, message = "주소는 250자를 초과할 수 없습니다")
     private String address;
 
+    @JsonProperty("bookmark")
     private boolean isBookmark;
+
+    @JsonProperty("public")
     private boolean isPublic;
 
     @Size(max = 10, message = "이모지는 10자를 초과할 수 없습니다")

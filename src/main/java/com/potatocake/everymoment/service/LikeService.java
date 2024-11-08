@@ -41,7 +41,7 @@ public class LikeService {
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.DIARY_NOT_FOUND));
 
-        if (!diary.isPublic()) {
+        if (!diary.isPublic() && !diary.checkOwner(memberId)) {
             throw new GlobalException(ErrorCode.DIARY_NOT_PUBLIC);
         }
 

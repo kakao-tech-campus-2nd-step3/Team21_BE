@@ -2,19 +2,32 @@ package com.potatocake.everymoment.util;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
 
-    private final SecretKey SECRET_KEY = Jwts.SIG.HS256.key().build();
+    @Value("${jwt.secret}")
+    private String secret;
+
+    private SecretKey SECRET_KEY;
     private final Long EXPIRE = 1000L * 60 * 60 * 48;
     public final String PREFIX = "Bearer ";
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        this.SECRET_KEY = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public Long getId(String token) {
         return Jwts.parser().verifyWith(SECRET_KEY).build()
