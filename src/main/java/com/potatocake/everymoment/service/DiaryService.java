@@ -22,6 +22,7 @@ import com.potatocake.everymoment.repository.CategoryRepository;
 import com.potatocake.everymoment.repository.DiaryCategoryRepository;
 import com.potatocake.everymoment.repository.DiaryRepository;
 import com.potatocake.everymoment.repository.FileRepository;
+import com.potatocake.everymoment.repository.LikeRepository;
 import com.potatocake.everymoment.repository.MemberRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,7 @@ public class DiaryService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final FileRepository fileRepository;
+    private final LikeRepository likeRepository;
     private final GeometryFactory geometryFactory;
     private final NotificationService notificationService;
 
@@ -137,7 +140,7 @@ public class DiaryService {
 
         Specification<Diary> spec;
 
-        if(!diaryFilterRequest.hasFilter()){
+        if (!diaryFilterRequest.hasFilter()) {
             LocalDate today = LocalDate.now();
 
             spec = DiarySpecification.filterDiaries(
@@ -149,9 +152,10 @@ public class DiaryService {
                             diaryFilterRequest.getUntil(),
                             diaryFilterRequest.getIsBookmark())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
-        }
 
-        else{
+            diaryPage = diaryRepository.findAll(spec,
+                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
+        } else {
             spec = DiarySpecification.filterDiaries(
                             diaryFilterRequest.getKeyword(),
                             emojis,
@@ -161,10 +165,11 @@ public class DiaryService {
                             diaryFilterRequest.getUntil(),
                             diaryFilterRequest.getIsBookmark())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
-        }
 
-        diaryPage = diaryRepository.findAll(spec,
-                PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize()));
+            diaryPage = diaryRepository.findAll(spec,
+                    PageRequest.of(diaryFilterRequest.getKey(), diaryFilterRequest.getSize(),
+                            Sort.by(Sort.Direction.DESC, "createAt")));
+        }
 
         List<MyDiarySimpleResponse> diaryDTOs = diaryPage.getContent().stream()
                 .map(this::convertToMyDiarySimpleResponseDto)
@@ -182,7 +187,7 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public MyDiaryResponse getMyDiary(Long memberId, Long diaryId) {
         Diary diary = getExistDiary(memberId, diaryId);
-        return convertToMyDiaryResponseDto(diary);
+        return convertToMyDiaryResponseDto(diary, memberId);
     }
 
     // 내 일기 위치 조회
@@ -205,7 +210,10 @@ public class DiaryService {
             diaryCategoryRepository.deleteByDiary(existingDiary);
         } else {
             List<CategoryRequest> categoryRequestList = diaryPatchRequest.getCategories();
+
             if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
+                diaryCategoryRepository.deleteByDiary(existingDiary);
+
                 for (CategoryRequest categoryRequest : categoryRequestList) {
                     Long categoryId = categoryRequest.getCategoryId();
 
@@ -226,25 +234,16 @@ public class DiaryService {
 
         // 다이어리 업데이트
         if (diaryPatchRequest.getContentDelete() != null && diaryPatchRequest.getContentDelete()) {
-            existingDiary.updateContent(null);
+            existingDiary.updateContentNull();
         } else {
             existingDiary.updateContent(diaryPatchRequest.getContent());
         }
 
-        if (diaryPatchRequest.getLocationNameDelete() != null && diaryPatchRequest.getLocationNameDelete()) {
-            existingDiary.updateLocationName(null);
-        } else {
-            existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
-        }
-
-        if (diaryPatchRequest.getAddressDelete() != null && diaryPatchRequest.getAddressDelete()) {
-            existingDiary.updateAddress(null);
-        } else {
-            existingDiary.updateAddress(diaryPatchRequest.getAddress());
-        }
+        existingDiary.updateLocationName(diaryPatchRequest.getLocationName());
+        existingDiary.updateAddress(diaryPatchRequest.getAddress());
 
         if (diaryPatchRequest.getEmojiDelete() != null && diaryPatchRequest.getEmojiDelete()) {
-            existingDiary.updateEmoji(null);
+            existingDiary.updateEmojiNull();
         } else {
             existingDiary.updateEmoji(diaryPatchRequest.getEmoji());
         }
@@ -284,7 +283,7 @@ public class DiaryService {
     }
 
     //상세 조회시 일기DTO 변환
-    private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary) {
+    private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary, Long memberId) {
         // 카테고리 찾음
         List<DiaryCategory> diaryCategories = diaryCategoryRepository.findByDiary(savedDiary);
         List<CategoryResponse> categoryResponseList = diaryCategories.stream()
@@ -294,6 +293,8 @@ public class DiaryService {
                         .build())
                 .collect(Collectors.toList());
 
+        boolean isLiked = likeRepository.existsByMemberIdAndDiaryId(memberId, savedDiary.getId());
+
         return MyDiaryResponse.builder()
                 .id(savedDiary.getId())
                 .categories(categoryResponseList)
@@ -302,6 +303,7 @@ public class DiaryService {
                 .isBookmark(savedDiary.isBookmark())
                 .emoji(savedDiary.getEmoji())
                 .content(savedDiary.getContent())
+                .isLiked(isLiked)
                 .createAt(savedDiary.getCreateAt())
                 .build();
     }

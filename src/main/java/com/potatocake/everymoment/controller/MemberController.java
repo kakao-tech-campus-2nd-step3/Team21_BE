@@ -2,6 +2,7 @@ package com.potatocake.everymoment.controller;
 
 import com.potatocake.everymoment.dto.SuccessResponse;
 import com.potatocake.everymoment.dto.request.MemberLoginRequest;
+import com.potatocake.everymoment.dto.response.AnonymousLoginResponse;
 import com.potatocake.everymoment.dto.response.JwtResponse;
 import com.potatocake.everymoment.dto.response.MemberDetailResponse;
 import com.potatocake.everymoment.dto.response.MemberMyResponse;
@@ -38,6 +39,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
 
     private final MemberService memberService;
+
+    @Operation(summary = "익명 로그인", description = "회원번호로 로그인하거나 새로운 익명 계정을 생성합니다.")
+    @ApiResponse(responseCode = "200", description = "익명 로그인 성공")
+    @GetMapping("/anonymous-login")
+    public ResponseEntity<SuccessResponse> anonymousLogin(@Parameter(description = "기기에 저장된 회원번호 (없을 경우 새로운 계정 생성)")
+                                                          @RequestParam(required = false) Long number) {
+        AnonymousLoginResponse response = memberService.anonymousLogin(number);
+        return ResponseEntity.ok(SuccessResponse.ok(response));
+    }
 
     @Operation(summary = "로그인", description = "회원 번호와 닉네임으로 로그인합니다.")
     @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = JwtResponse.class)))

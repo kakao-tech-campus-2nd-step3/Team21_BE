@@ -4,8 +4,12 @@ import com.potatocake.everymoment.entity.Category;
 import com.potatocake.everymoment.entity.Member;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class CategoryCreateRequest {
 
