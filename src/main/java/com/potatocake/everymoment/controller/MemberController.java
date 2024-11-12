@@ -31,7 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Tag(name = "Members", description = "회원 관리 API")
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
@@ -117,6 +119,11 @@ public class MemberController {
             @Parameter(description = "새로운 닉네임")
             @RequestParam(required = false) String nickname
     ) {
+        log.info("프로필 업데이트 요청 들어옴");
+        log.info("memberDetails: {}", memberDetails);
+        log.info("profileImage: {}", profileImage);
+        log.info("nickname: {}", nickname);
+        
         validateProfileUpdate(profileImage, nickname);
 
         memberService.updateMemberInfo(memberDetails.getId(), profileImage, nickname);
