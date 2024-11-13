@@ -37,12 +37,31 @@ public class DiarySpecification {
             }
 
             if(date != null){
-                predicate = builder.and(predicate, builder.equal(root.get("createAt").as(LocalDate.class), date));
+                predicate = builder.and(predicate,
+                        builder.or(
+                                builder.and(
+                                        builder.isNotNull(root.get("diaryDate")),
+                                        builder.equal(root.get("diaryDate"), date)
+                                ),
+                                builder.and(
+                                        builder.isNull(root.get("diaryDate")),
+                                        builder.equal(root.get("createAt").as(LocalDate.class), date)
+                                )
+                        ));
             }
 
             if (from != null && until != null) {
                 predicate = builder.and(predicate,
-                        builder.between(root.get("createAt"), from, until.plusDays(1)));
+                        builder.or(
+                                builder.and(
+                                        builder.isNotNull(root.get("diaryDate")),
+                                        builder.between(root.get("diaryDate"), from, until)
+                                ),
+                                builder.and(
+                                        builder.isNull(root.get("diaryDate")),
+                                        builder.between(root.get("createAt"), from, until.plusDays(1))
+                                )
+                        ));
             }
 
             if (isBookmark != null) {

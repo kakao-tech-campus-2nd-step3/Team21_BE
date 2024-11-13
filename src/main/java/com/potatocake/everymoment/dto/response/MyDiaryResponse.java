@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
@@ -17,4 +18,5 @@ public class MyDiaryResponse {
     private String content;
     private boolean isLiked;
     private LocalDateTime createAt;
+    private LocalDate diaryDate;
 }

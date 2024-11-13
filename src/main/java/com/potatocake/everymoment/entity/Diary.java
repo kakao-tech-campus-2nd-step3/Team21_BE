@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -36,6 +37,9 @@ public class Diary extends BaseTimeEntity {
 
     @Column(columnDefinition = "TEXT")
     private String content;
+
+    @Column
+    private LocalDate diaryDate;
 
     @Column(nullable = false)
     private Point locationPoint;

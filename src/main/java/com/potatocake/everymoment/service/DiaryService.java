@@ -95,6 +95,7 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .member(currentMember)
                 .content(diaryManualCreateRequest.getContent())
+                .diaryDate(diaryManualCreateRequest.getDiaryDate())
                 .locationPoint(point)
                 .locationName(diaryManualCreateRequest.getLocationName())
                 .address(diaryManualCreateRequest.getAddress())
@@ -107,22 +108,8 @@ public class DiaryService {
 
         //카테고리 저장
         List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
-        for (CategoryRequest categoryRequest : categoryRequestList) {
-            Long categoryId = categoryRequest.getCategoryId();
-
-            DiaryCategory diaryCategory = DiaryCategory.builder()
-                    .diary(savedDiary)
-                    .category(categoryRepository.findById(categoryId)
-                            .map(category -> {
-                                // Category가 현재 사용자의 소유인지 확인
-                                category.checkOwner(currentMember.getId());
-                                return category;
-                            })
-                            .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
-                    .build();
-
-            diaryCategoryRepository.save(diaryCategory);
-
+        if(categoryRequestList != null){
+            addDiaryCategory(savedDiary, currentMember.getId(), categoryRequestList);
         }
     }
 
@@ -140,7 +127,7 @@ public class DiaryService {
 
         Specification<Diary> spec;
 
-        if (!diaryFilterRequest.hasFilter()) {
+        if(!diaryFilterRequest.hasFilter()){
             LocalDate today = LocalDate.now();
 
             spec = DiarySpecification.filterDiaries(
@@ -213,22 +200,7 @@ public class DiaryService {
 
             if (categoryRequestList != null && !categoryRequestList.isEmpty()) {
                 diaryCategoryRepository.deleteByDiary(existingDiary);
-
-                for (CategoryRequest categoryRequest : categoryRequestList) {
-                    Long categoryId = categoryRequest.getCategoryId();
-
-                    DiaryCategory diaryCategory = DiaryCategory.builder()
-                            .diary(existingDiary)
-                            .category(categoryRepository.findById(categoryId)
-                                    .map(category -> {
-                                        category.checkOwner(memberId);
-                                        return category;
-                                    })
-                                    .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
-                            .build();
-
-                    diaryCategoryRepository.save(diaryCategory);
-                }
+                addDiaryCategory(existingDiary, memberId, categoryRequestList);
             }
         }
 
@@ -282,6 +254,25 @@ public class DiaryService {
         return diary;
     }
 
+    //다이어리에 카테고리 추가
+    private void addDiaryCategory(Diary savedDiary, Long memberId, List<CategoryRequest> categoryRequestList) {
+        for (CategoryRequest categoryRequest : categoryRequestList) {
+            Long categoryId = categoryRequest.getCategoryId();
+
+            DiaryCategory diaryCategory = DiaryCategory.builder()
+                    .diary(savedDiary)
+                    .category(categoryRepository.findById(categoryId)
+                            .map(category -> {
+                                category.checkOwner(memberId);
+                                return category;
+                            })
+                            .orElseThrow(() -> new GlobalException(ErrorCode.CATEGORY_NOT_FOUND)))
+                    .build();
+
+            diaryCategoryRepository.save(diaryCategory);
+        }
+    }
+
     //상세 조회시 일기DTO 변환
     private MyDiaryResponse convertToMyDiaryResponseDto(Diary savedDiary, Long memberId) {
         // 카테고리 찾음
@@ -305,6 +296,7 @@ public class DiaryService {
                 .content(savedDiary.getContent())
                 .isLiked(isLiked)
                 .createAt(savedDiary.getCreateAt())
+                .diaryDate(savedDiary.getDiaryDate())
                 .build();
     }
 
@@ -329,6 +321,7 @@ public class DiaryService {
                 .thumbnailResponse(thumbnailResponse)
                 .content(savedDiary.getContent())
                 .createAt(savedDiary.getCreateAt())
+                .diaryDate(savedDiary.getDiaryDate())
                 .build();
     }
 }

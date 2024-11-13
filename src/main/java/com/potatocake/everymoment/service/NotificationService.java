@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +61,8 @@ public class NotificationService {
         Member currentMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        List<Notification> notifications = notificationRepository.findAllByMemberId(currentMember.getId());
+        List<Notification> notifications = notificationRepository.findAllByMemberId(
+                currentMember.getId(), Sort.by(Sort.Direction.DESC, "createAt"));
 
         return notifications.stream()
                 .map(this::convertToNotificationResponseDTO)
