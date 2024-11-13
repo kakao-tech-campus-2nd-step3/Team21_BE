@@ -3,6 +3,7 @@ package com.potatocake.everymoment.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.potatocake.everymoment.dto.LocationPoint;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,6 +11,8 @@ import lombok.Getter;
 @Builder
 @Getter
 public class DiaryManualCreateRequest {
+
+    private LocalDate diaryDate;
 
     private List<CategoryRequest> categories;
 

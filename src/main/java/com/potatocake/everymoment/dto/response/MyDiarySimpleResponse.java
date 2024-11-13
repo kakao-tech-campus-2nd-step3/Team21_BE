@@ -1,5 +1,6 @@
 package com.potatocake.everymoment.dto.response;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,4 +17,5 @@ public class MyDiarySimpleResponse {
     private ThumbnailResponse thumbnailResponse;
     private String content;
     private LocalDateTime createAt;
+    private LocalDate diaryDate;
 }

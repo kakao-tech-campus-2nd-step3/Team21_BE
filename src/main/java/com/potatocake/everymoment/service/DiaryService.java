@@ -95,6 +95,7 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .member(currentMember)
                 .content(diaryManualCreateRequest.getContent())
+                .diaryDate(diaryManualCreateRequest.getDiaryDate())
                 .locationPoint(point)
                 .locationName(diaryManualCreateRequest.getLocationName())
                 .address(diaryManualCreateRequest.getAddress())
@@ -295,6 +296,7 @@ public class DiaryService {
                 .content(savedDiary.getContent())
                 .isLiked(isLiked)
                 .createAt(savedDiary.getCreateAt())
+                .diaryDate(savedDiary.getDiaryDate())
                 .build();
     }
 
@@ -319,6 +321,7 @@ public class DiaryService {
                 .thumbnailResponse(thumbnailResponse)
                 .content(savedDiary.getContent())
                 .createAt(savedDiary.getCreateAt())
+                .diaryDate(savedDiary.getDiaryDate())
                 .build();
     }
 }
