@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
@@ -79,7 +80,7 @@ class NotificationRepositoryTest {
 
         // when
         List<Notification> foundNotifications = notificationRepository
-                .findAllByMemberId(savedMember.getId());
+                .findAllByMemberId(savedMember.getId(), Sort.by(Sort.Direction.DESC, "createAt"));
 
         // then
         assertThat(foundNotifications).hasSize(2);
@@ -113,7 +114,7 @@ class NotificationRepositoryTest {
 
         // then
         List<Notification> remainingNotifications = notificationRepository
-                .findAllByMemberId(savedMember.getId());
+                .findAllByMemberId(savedMember.getId(), Sort.by(Sort.Direction.DESC, "createAt"));
         assertThat(remainingNotifications).isEmpty();
     }
 

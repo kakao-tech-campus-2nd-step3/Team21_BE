@@ -24,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -104,7 +105,7 @@ class NotificationServiceTest {
         );
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-        given(notificationRepository.findAllByMemberId(memberId)).willReturn(notifications);
+        given(notificationRepository.findAllByMemberId(memberId, Sort.by(Sort.Direction.DESC, "createAt"))).willReturn(notifications);
 
         // when
         List<NotificationListResponse> responses = notificationService.getNotifications(memberId);
