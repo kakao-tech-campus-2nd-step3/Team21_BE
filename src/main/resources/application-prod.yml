@@ -9,8 +9,6 @@ spring:
       hibernate:
         jdbc:
           time_zone: Asia/Seoul
-        format_sql: true
-    show-sql: true
     hibernate:
       ddl-auto: none
 
@@ -23,14 +21,6 @@ spring:
       max-file-size: 5MB
       max-request-size: 25MB
       resolve-lazily: true
-
-logging:
-  level:
-    org:
-      hibernate:
-        orm:
-          jdbc:
-            bind: trace
 
 aws:
   s3:
