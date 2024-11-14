@@ -123,7 +123,6 @@ Every Moment는 위치 데이터를 기반으로 사용자의 하루를 **자동
 
 ### ⚙️ Others
 - JWT (인증/인가)
-- Lombok
 
 <br/>
 
