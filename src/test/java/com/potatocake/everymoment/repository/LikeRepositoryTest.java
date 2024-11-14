@@ -96,7 +96,7 @@ class LikeRepositoryTest {
         likeRepository.save(like);
 
         // when
-        Optional<Like> foundLike = likeRepository.findByMemberIdAndDiaryId(member.getId(), diary.getId());
+        Optional<Like> foundLike = likeRepository.findByMemberIdAndDiaryIdWithLock(member.getId(), diary.getId());
 
         // then
         assertThat(foundLike).isPresent();
