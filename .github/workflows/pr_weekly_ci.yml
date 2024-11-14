@@ -53,7 +53,7 @@ jobs:
       - name: 빌드 테스트 수행
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build --build-cache --stacktrace
+          ./gradlew clean build jacocoTestReport --build-cache --stacktrace
 
       - name: 테스트 수행 결과 보고
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -67,3 +67,19 @@ jobs:
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
           token: ${{ github.token }}
+
+      - name: JaCoCo 테스트 커버리지 리포트 업로드
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: jacoco-report
+          path: '**/build/reports/jacoco/'
+
+      - name: JaCoCo 테스트 커버리지 결과를 PR에 코멘트로 등록
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ github.token }}
+          min-coverage-overall: 70
+          min-coverage-changed-files: 70
+          title: '📊 테스트 커버리지 리포트'
