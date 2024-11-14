@@ -108,7 +108,7 @@ public class DiaryService {
 
         //카테고리 저장
         List<CategoryRequest> categoryRequestList = diaryManualCreateRequest.getCategories();
-        if(categoryRequestList != null){
+        if (categoryRequestList != null) {
             addDiaryCategory(savedDiary, currentMember.getId(), categoryRequestList);
         }
     }
@@ -127,7 +127,7 @@ public class DiaryService {
 
         Specification<Diary> spec;
 
-        if(!diaryFilterRequest.hasFilter()){
+        if (!diaryFilterRequest.hasFilter()) {
             LocalDate today = LocalDate.now();
 
             spec = DiarySpecification.filterDiaries(
@@ -137,7 +137,8 @@ public class DiaryService {
                             today,
                             diaryFilterRequest.getFrom(),
                             diaryFilterRequest.getUntil(),
-                            diaryFilterRequest.getIsBookmark())
+                            diaryFilterRequest.getIsBookmark(),
+                            diaryFilterRequest.getIsPublic())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,
@@ -150,7 +151,8 @@ public class DiaryService {
                             diaryFilterRequest.getDate(),
                             diaryFilterRequest.getFrom(),
                             diaryFilterRequest.getUntil(),
-                            diaryFilterRequest.getIsBookmark())
+                            diaryFilterRequest.getIsBookmark(),
+                            diaryFilterRequest.getIsPublic())
                     .and((root, query, builder) -> builder.equal(root.get("member"), currentMember));
 
             diaryPage = diaryRepository.findAll(spec,

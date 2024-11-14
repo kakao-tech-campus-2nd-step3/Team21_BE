@@ -18,6 +18,7 @@ public class DiaryFilterRequest {
     private LocalDate from;
     private LocalDate until;
     private Boolean isBookmark;
+    private Boolean isPublic;
     private int key;
     private int size;
 
