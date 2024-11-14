@@ -54,12 +54,38 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
+    dependsOn test // 테스트 실행 후 리포트 생성을 보장
+
     reports {
         xml.required = true
         html.required = true
     }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/dto/**',
+                    '**/entity/**',
+                    '**/config/**',
+                    '**/exception/**',
+                    '**/*Application.class'
+            ])
+        }))
+    }
 }
 
 test {
+    useJUnitPlatform()
     finalizedBy jacocoTestReport
+}
+
+// 테스트 커버리지 최소 기준 설정
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.70
+            }
+        }
+    }
 }
