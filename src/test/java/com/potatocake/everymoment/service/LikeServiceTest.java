@@ -85,7 +85,7 @@ class LikeServiceTest {
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
         given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
-        given(likeRepository.findByMemberIdAndDiaryId(memberId, diaryId))
+        given(likeRepository.findByMemberIdAndDiaryIdWithLock(memberId, diaryId))
                 .willReturn(Optional.empty());
 
         // when
@@ -122,7 +122,7 @@ class LikeServiceTest {
 
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
         given(diaryRepository.findById(diaryId)).willReturn(Optional.of(diary));
-        given(likeRepository.findByMemberIdAndDiaryId(memberId, diaryId))
+        given(likeRepository.findByMemberIdAndDiaryIdWithLock(memberId, diaryId))
                 .willReturn(Optional.of(like));
 
         // when
@@ -138,9 +138,7 @@ class LikeServiceTest {
         // given
         Long memberId = 1L;
         Long diaryId = 1L;
-        Member member = Member.builder()
-                .id(memberId)
-                .build();
+        
         Diary diary = Diary.builder()
                 .id(diaryId)
                 .isPublic(false)
