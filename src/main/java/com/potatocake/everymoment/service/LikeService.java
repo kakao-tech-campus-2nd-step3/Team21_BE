@@ -48,7 +48,7 @@ public class LikeService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GlobalException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Optional<Like> existingLike = likeRepository.findByMemberIdAndDiaryId(memberId, diaryId);
+        Optional<Like> existingLike = likeRepository.findByMemberIdAndDiaryIdWithLock(memberId, diaryId);
 
         if (existingLike.isPresent()) {
             // 이미 좋아요가 존재하면 삭제 (좋아요 취소)
