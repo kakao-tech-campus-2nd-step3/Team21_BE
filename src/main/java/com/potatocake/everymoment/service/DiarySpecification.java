@@ -18,7 +18,7 @@ public class DiarySpecification {
 
     public static Specification<Diary> filterDiaries(
             String keyword, List<String> emojis, List<String> categories,
-            LocalDate date, LocalDate from, LocalDate until, Boolean isBookmark) {
+            LocalDate date, LocalDate from, LocalDate until, Boolean isBookmark, Boolean isPublic) {
         return (Root<Diary> root, CriteriaQuery<?> query, CriteriaBuilder builder) -> {
             Predicate predicate = builder.conjunction();
 
@@ -36,17 +36,40 @@ public class DiarySpecification {
                 predicate = builder.and(predicate, categoryJoin.get("categoryName").in(categories));
             }
 
-            if(date != null){
-                predicate = builder.and(predicate, builder.equal(root.get("createAt").as(LocalDate.class), date));
+            if (date != null) {
+                predicate = builder.and(predicate,
+                        builder.or(
+                                builder.and(
+                                        builder.isNotNull(root.get("diaryDate")),
+                                        builder.equal(root.get("diaryDate"), date)
+                                ),
+                                builder.and(
+                                        builder.isNull(root.get("diaryDate")),
+                                        builder.equal(root.get("createAt").as(LocalDate.class), date)
+                                )
+                        ));
             }
 
             if (from != null && until != null) {
                 predicate = builder.and(predicate,
-                        builder.between(root.get("createAt"), from, until.plusDays(1)));
+                        builder.or(
+                                builder.and(
+                                        builder.isNotNull(root.get("diaryDate")),
+                                        builder.between(root.get("diaryDate"), from, until)
+                                ),
+                                builder.and(
+                                        builder.isNull(root.get("diaryDate")),
+                                        builder.between(root.get("createAt"), from, until.plusDays(1))
+                                )
+                        ));
             }
 
             if (isBookmark != null) {
                 predicate = builder.and(predicate, builder.equal(root.get("isBookmark"), isBookmark));
+            }
+
+            if (isPublic != null) {
+                predicate = builder.and(predicate, builder.equal(root.get("isPublic"), isPublic));
             }
 
             return predicate;

@@ -100,6 +100,8 @@ public class DiaryController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate until,
             @Parameter(description = "북마크 여부")
             @RequestParam(required = false) Boolean bookmark,
+            @Parameter(description = "공유 여부")
+            @RequestParam(required = false) Boolean isPublic,
             @Parameter(description = "페이지 키")
             @RequestParam(defaultValue = "0") int key,
             @Parameter(description = "페이지 크기")
@@ -115,6 +117,7 @@ public class DiaryController {
                 .from(from)
                 .until(until)
                 .isBookmark(bookmark)
+                .isPublic(isPublic)
                 .key(key)
                 .size(size)
                 .build();

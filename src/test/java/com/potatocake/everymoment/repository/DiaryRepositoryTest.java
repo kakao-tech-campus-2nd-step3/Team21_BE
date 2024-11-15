@@ -93,7 +93,7 @@ class DiaryRepositoryTest {
                 .locationName("Busan")
                 .address("Busan Address")
                 .emoji("😍")
-                .isPublic(true)
+                .isPublic(false)
                 .isBookmark(false)
                 .build();
 
@@ -107,7 +107,8 @@ class DiaryRepositoryTest {
                 null,      // date
                 null,      // from
                 null,      // until
-                false      // isBookmark
+                false,     // isBookmark
+                true       // isPublic
         );
 
         Page<Diary> result = diaryRepository.findAll(spec, PageRequest.of(0, 10));
@@ -132,7 +133,7 @@ class DiaryRepositoryTest {
                 .locationName("Seoul")
                 .address("Seoul Address")
                 .isBookmark(true)
-                .isPublic(false)
+                .isPublic(true)
                 .build();
 
         Diary diary2 = createDiary(member, "Content 2", "Busan", "Busan Address");
@@ -156,7 +157,8 @@ class DiaryRepositoryTest {
                 null,    // date
                 null,    // from
                 null,    // until
-                true     // isBookmark
+                true,     // isBookmark
+                true     // isPublic
         );
 
         Page<Diary> result = diaryRepository.findAll(spec, PageRequest.of(0, 10));
