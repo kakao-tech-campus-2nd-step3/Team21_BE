@@ -16,7 +16,12 @@ Every Moment는 위치 데이터를 기반으로 사용자의 하루를 **자동
 - 🔍 **스마트 검색**: 다양한 필터링 옵션으로 원하는 일기 빠른 검색
 - 🔔 **실시간 알림**: 친구와의 상호작용(좋아요, 댓글, 친구 요청 등)과 새로운 장소 감지를 실시간으로 알림
 
-<br/>
+### 다운로드
+<a href="https://play.google.com/store/apps/details?id=potatocake.katecam.everymoment">
+    <img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="100">
+</a>
+
+<br/><br/>
 
 ## ⭐️ 주요 기능
 | 자동 일기 기록 | 손쉬운 일기 편집 | 다양한 검색 필터링 | 친구와의 일기 공유 |
